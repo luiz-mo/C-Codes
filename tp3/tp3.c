@@ -10,7 +10,10 @@
 #include "racional.h"
 
 struct racional **cria_vetor(int n){
-	
+	struct racional **v;
+	if(!(v = malloc((sizeof(struct racional *)) * n)))
+		return 0;
+	return v;
 }
 
 /* coloque aqui as funções auxiliares que precisar neste arquivo */
@@ -37,10 +40,13 @@ void imprime_vetor(struct racional *v[], int n){
 }
 
 void elimina_invalidos_vetor(struct racional *v[], int *novo_tam){
+	struct racional *aux;
 	int i=0;
 	while(i<*novo_tam)
 		if(!valido_r(v[i])){
+			aux = v[i];
 			v[i] = v[*novo_tam-1]; /*troca o invalido com o ultimo elemento do vetor*/
+			v[*novo_tam-1] = aux;
 			(*novo_tam)--;
 		}
 		else
@@ -81,10 +87,10 @@ int main ()
 	struct racional **v, *soma;
 	int n, novo_tam;
 	scanf("%d", &n);
-	cria_vetor(n);
 	if (n < 0 || n>100)
 		return 1;
-
+	
+	v = cria_vetor(n);
 	preenche_vetor(v,n);
 	imprime_vetor(v,n);
 
@@ -102,9 +108,9 @@ int main ()
 	
 	printf("\n");
 
-
 	destroi_vetor(v,n);
 	imprime_vetor(v,novo_tam);
+	free(v);
 	
 	printf("\n");
 	return 0;
