@@ -58,7 +58,7 @@ int simplifica_r (struct racional *r)
         return 0;
     r->num /= x;
     r->den /= x;
-    if(r->den < 0){ /*den < 0 inverte tanto para num>0 quanto para num<0*/
+    if(r->den < 0){ /*den < 0 inverte tanto para num>0 (para deixar o sinal negativo no numerador) quanto para num<0*/
         r->num *= -1;
         r->den *= -1;
     }
@@ -96,6 +96,7 @@ int valido_r (struct racional *r){
 	return 1;
 }
 
+/*nao precisa chamar simplifica_r porque ja foi chamado em cria_r */
 void imprime_r (struct racional *r){
 	if(!r){
 		printf("NULL");
