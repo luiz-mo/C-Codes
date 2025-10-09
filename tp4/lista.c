@@ -54,12 +54,29 @@ int lista_insere_fim (struct lista *lista, int chave){
     nodo->chave = chave;
     nodo->prox = NULL;
 
+    lista_inicia_iterador(lista);
     while(lista->ptr < lista->tamanho)
-        lista_incrementa_iterador()
+        lista_incrementa_iterador();
 
+    lista->ptr->prox = n;
+    lista->tamanho++;
+    
+    return 1;
 }
 
 int lista_insere_ordenado (struct lista *lista, int chave){
+    struct nodo *n;
+
+    f(!(n = malloc(sizeof(struct nodo))))
+        return 0;
+
+    lista_inicia_iterador(lista);
+    while(lista->ptr < lista->tamanho){
+        if(chave > lista->ptr->chave)
+            lista_incrementa_iterador;
+        else
+            lista
+    }
 }
 
 int lista_remove_inicio (struct lista *lista, int *chave){
@@ -74,7 +91,6 @@ int lista_remove_ordenado (struct lista *lista, int chave){
 int lista_vazia (struct lista *lista){
     if(!(lista->tam))
         return 1;
-
     return 0;
 }
 
