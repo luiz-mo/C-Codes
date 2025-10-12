@@ -37,9 +37,9 @@ int lista_insere_inicio (struct lista *lista, int chave){
     if(!(n = malloc(sizeof(struct nodo))))
         return 0;
 
-    nodo->chave = chave;
-    nodo->prox = lista->ini;
-    lista->ini = nodo;
+    n->chave = chave;
+    n->prox = lista->ini;
+    lista->ini = n;
     lista->tamanho++;
 
     return 1;
@@ -51,12 +51,12 @@ int lista_insere_fim (struct lista *lista, int chave){
     if(!(n = malloc(sizeof(struct nodo))))
         return 0;
 
-    nodo->chave = chave;
-    nodo->prox = NULL;
+    n->chave = chave;
+    n->prox = NULL;
 
     lista_inicia_iterador(lista);
-    while(lista->ptr < lista->tamanho)
-        lista_incrementa_iterador();
+    while(lista->ptr->prox != NULL)
+        lista_incrementa_iterador(lista,&chave);
 
     lista->ptr->prox = n;
     lista->tamanho++;
@@ -67,38 +67,86 @@ int lista_insere_fim (struct lista *lista, int chave){
 int lista_insere_ordenado (struct lista *lista, int chave){
     struct nodo *n;
 
-    f(!(n = malloc(sizeof(struct nodo))))
+    if(!(n = malloc(sizeof(struct nodo))))
         return 0;
+    n->chave = chave;
+    n->prox = NULL;
 
     lista_inicia_iterador(lista);
-    while(lista->ptr < lista->tamanho){
-        if(chave > lista->ptr->chave)
-            lista_incrementa_iterador;
-        else
-            lista
+
+    if(chave < lista->ptr->chave){
+        n->prox = lista->ini;
+        lista->ini = n;
     }
+        
+    while(lista->ptr->prox != NULL && chave > lista->ptr->prox->chave)
+        lista_incrementa_iterador(lista,chave);
+    n->prox = lista->ptr->prox;
+    lista->ptr->prox = n;
 }
 
 int lista_remove_inicio (struct lista *lista, int *chave){
+    if(lista->tamanho == 0)
+        return 0;
+    
+    struct nodo *aux;
+
+    aux = lista->ini;
+    lista->ini = lista->ini->prox;
+
+    free(aux);
+    aux = NULL;
+    lista->tamanho--;
+
+    return 1;
 }
 
 int lista_remove_fim (struct lista *lista, int *chave){
+    if(lista->tamanho == 0)
+        return 0;
+
+    struct nodo *aux;
+
+    lista_inicia_iterador(lista);
+    while(lista->ptr->prox != NULL)
+        lista_incrementa_iterador(lista,&chave);
+    
+    aux = lista->ptr;
+    *chave = lista->ptr->chave;
+    lista->ptr = NULL;
+
+    free(aux);
+    aux = NULL;
+    lista->tamanho--;
+    
+    return 1;
 }
 
 int lista_remove_ordenado (struct lista *lista, int chave){
+
 }
 
 int lista_vazia (struct lista *lista){
-    if(!(lista->tam))
+    if(!(lista->tamanho))
         return 1;
+
     return 0;
 }
 
 int lista_tamanho (struct lista *lista){
-    return lista->tam;
+    return lista->tamanho;
 }
 
 int lista_pertence (struct lista *lista, int chave){
+    lista_inicia_iterador(lista);
+
+    while(lista->ptr->prox != NULL){
+        if(lista->ptr->chave == chave)
+            return 1;
+        lista_incrementa_iterador(lista,&lista->ptr->chave);
+    }
+
+    return 0; /*se chegou aqui, significa que o elemento nao foi encontrado*/
 }
 
 void lista_inicia_iterador (struct lista *lista){
@@ -106,8 +154,8 @@ void lista_inicia_iterador (struct lista *lista){
 }
 
 int lista_incrementa_iterador (struct lista *lista, int *chave){
-    lista->ptr++;
-    if(lista->ptr > lista->tamanho)
+    lista->ptr = lista->ptr->prox;
+    if(lista->ptr->prox = NULL)
         return 0;
 
     *chave = lista->ptr->chave;
