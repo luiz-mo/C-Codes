@@ -22,13 +22,13 @@ struct lista *lista_cria (){
     if(!(l = malloc(sizeof(struct lista)))) /*tenta alocar lista*/
         return 0;
 
-    if(!(n = malloc(sizeof(struct nodo)))){ /*tenta alocar nodo cabeca*/
-        free(l); /*se nao der para alocar o nodo cabeca, libera a lista criada*/
+    if(!(n = malloc(sizeof(struct nodo)))){ /*tenta alocar sentinela*/
+        free(l); /*se nao der para alocar o sentinela, libera a lista criada*/
         return 0;
     }
 
     n->prox = NULL;
-    n->chave = 0; /*nao possui chave valida*/
+    n->chave = 0; 
 
     l->ini = n;
     l->ptr = NULL;
@@ -50,10 +50,12 @@ void lista_destroi (struct lista **lista){
     *lista = NULL;
 }
 
+/*como lista->ini é o sentinela, o primeiro elemento sera sempre lista->ini->prox*/
+
 int lista_insere_inicio (struct lista *lista, int chave){
     struct nodo *n;
 
-    if(!(n = malloc(sizeof(struct nodo))))
+    if(!lista || !(n = malloc(sizeof(struct nodo))))
         return 0;
 
     n->chave = chave;
@@ -67,7 +69,7 @@ int lista_insere_inicio (struct lista *lista, int chave){
 int lista_insere_fim (struct lista *lista, int chave){
     struct nodo *n, *aux;
 
-    if(!(n = malloc(sizeof(struct nodo))))
+    if(!lista || !(n = malloc(sizeof(struct nodo))))
         return 0;
 
     aux = lista->ini;
@@ -87,11 +89,10 @@ int lista_insere_fim (struct lista *lista, int chave){
 int lista_insere_ordenado (struct lista *lista, int chave){
     struct nodo *n, *aux;
 
-    if(!(n = malloc(sizeof(struct nodo))))
+    if(!lista || !(n = malloc(sizeof(struct nodo))))
         return 0;
 
     n->chave = chave;
-    n->prox = NULL;
 
     aux = lista->ini;
         
@@ -106,7 +107,7 @@ int lista_insere_ordenado (struct lista *lista, int chave){
 }
 
 int lista_remove_inicio (struct lista *lista, int *chave){
-    if(lista->tamanho == 0)
+    if(!lista || lista_vazia(lista))
         return 0;
     
     struct nodo *aux;
@@ -123,14 +124,16 @@ int lista_remove_inicio (struct lista *lista, int *chave){
 }
 
 int lista_remove_fim (struct lista *lista, int *chave){
-    if(lista->tamanho == 0)
+    if(!lista || lista_vazia(lista))
         return 0;
 
     struct nodo *aux;
 
     aux = lista->ini;
-    while(aux->prox->prox != NULL) /*para no penultimo nodo*/
-        aux = aux->prox;
+
+    if(lista->tamanho > 1) /*verifica se o penultimo nodo existe*/
+        while(aux->prox->prox != NULL) /*para no penultimo nodo*/
+            aux = aux->prox;
     
     *chave = aux->prox->chave;
     
@@ -142,7 +145,7 @@ int lista_remove_fim (struct lista *lista, int *chave){
 }
 
 int lista_remove_ordenado (struct lista *lista, int chave){
-    if(lista->tamanho == 0)
+    if(!lista || lista_vazia(lista))
         return 0;
 
     struct nodo *aux,*p;
@@ -151,6 +154,9 @@ int lista_remove_ordenado (struct lista *lista, int chave){
     
     while(aux->prox != NULL && chave != aux->prox->chave)
         aux = aux->prox;
+
+    if(aux->prox == NULL) /*elemento nao encontrado*/
+        return 0;
     
     p = aux->prox;
     aux->prox = aux->prox->prox;
@@ -176,6 +182,7 @@ int lista_pertence (struct lista *lista, int chave){
     struct nodo *aux;
     
     aux = lista->ini->prox;
+
     while(aux != NULL){
         if(aux->chave == chave)
             return 1;
