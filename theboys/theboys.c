@@ -59,26 +59,7 @@ struct mundo{
     int relogio[T_INICIO];
 };
 
-int inicializa_heroi(struct mundo *w, int id){
-    struct heroi *h;
 
-    if(!(h = malloc(sizeof(struct heroi))))
-        return 0;
-    
-    h->id = id;
-    h->experiencia = 0;
-    h->paciencia = rand
-}
-
-int inicializa_mundo(struct mundo *w){
-    int i;
-
-    if(!(w = malloc(sizeof(struct mundo))))
-        return 0;
-
-    for(i=0;i < w->n_herois;i++)
-        inicializa_heroi(w,i);
-}
 
 // programa principal
 int main ()

@@ -1,3 +1,15 @@
+#ifndef ENTIDADES
+#define ENTIDADES
+
+#define T_INICIO 0
+#define T_FIM_DO_MUNDO 525600
+#define N_TAMANHO_MUNDO 20000
+#define N_HABILIDADES 10
+#define N_HEROIS (N_HABILIDADES*5)
+#define N_BASES (N_HEROIS/5)
+#define N_MISSOES (T_FIM_DO_MUNDO/100)
+#define N_COMPOSTOS_V (N_HABILIDADES*3)
+
 #include "conjunto.h"
 #include "lista.h"
 #include "fila.h"
@@ -22,7 +34,7 @@ struct base{
     int lotacao;
     struct cjto_t *presentes;
     struct fila_t *fila_herois;
-    struct coord coord_base;
+    struct coord local;
 };
 
 struct missao{
@@ -43,3 +55,5 @@ struct mundo{
     struct coord tam;
     int relogio;
 };
+
+#endif
