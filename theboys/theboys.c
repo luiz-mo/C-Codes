@@ -9,6 +9,15 @@
 #include "fila.h"
 #include "fprio.h"
 
+#define T_INICIO 0
+#define T_FIM_DO_MUNDO 525600
+#define N_TAMANHO_MUNDO 20000
+#define N_HABILIDADES 10
+#define N_HEROIS (N_HABILIDADES*5)
+#define N_BASES (N_HEROIS/5)
+#define N_MISSOES (T_FIM_DO_MUNDO/100)
+#define N_COMPOSTOS_V (N_HABILIDADES*3)
+
 struct heroi{
     int id;
     struct cjto_t *habilidades;
@@ -21,7 +30,7 @@ struct heroi{
 struct coord{
     int x;
     int y;
-}
+};
 
 struct base{
     int id;
@@ -29,28 +38,52 @@ struct base{
     struct cjto_t *presentes;
     struct fila_t *fila_herois;
     struct coord coord_base;
-}
+};
 
 struct missao{
     int id;
     struct cjto_t *habilidades;
     struct coord local;
-}
+};
 
 struct mundo{
-    int n_herois;
+    int n_herois[N_HEROIS];
     struct heroi *herois;
-    int n_bases;
+    int n_bases[N_BASES];
     struct base *bases;
-    int n_missoes;
+    int n_missoes[N_MISSOES];
     struct missao *missoes;
+    int n_habilidades[N_HABILIDADES];
+    int n_compostosV[N_COMPOSTOS_V];
+    struct coord tam[N_TAMANHO_MUNDO];
+    int relogio[T_INICIO];
+};
+
+int inicializa_heroi(struct mundo *w, int id){
+    struct heroi *h;
+
+    if(!(h = malloc(sizeof(struct heroi))))
+        return 0;
     
+    h->id = id;
+    h->experiencia = 0;
+    h->paciencia = rand
+}
+
+int inicializa_mundo(struct mundo *w){
+    int i;
+
+    if(!(w = malloc(sizeof(struct mundo))))
+        return 0;
+
+    for(i=0;i < w->n_herois;i++)
+        inicializa_heroi(w,i);
 }
 
 // programa principal
 int main ()
 {
-  // iniciar o mundo
+    srand(0);
 
   // executar o laço de simulação
   
