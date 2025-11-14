@@ -9,17 +9,20 @@
 #include "fila.h"
 #include "fprio.h"
 #include "entidades.h"
+#include "inicializacoes.h"
 
 
 // programa principal
-int main ()
-{
+int main (){
+    struct mundo *w;
     srand(0);
 
-  // executar o laço de simulação
-  
-  // destruir o mundo
+    inicializa_mundo(w);
 
-  return (0) ;
+    
+  
+    // destruir o mundo
+
+    return (0) ;
 }
 

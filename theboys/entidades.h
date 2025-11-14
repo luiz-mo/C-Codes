@@ -1,15 +1,6 @@
 #ifndef ENTIDADES
 #define ENTIDADES
 
-#define T_INICIO 0
-#define T_FIM_DO_MUNDO 525600
-#define N_TAMANHO_MUNDO 20000
-#define N_HABILIDADES 10
-#define N_HEROIS (N_HABILIDADES*5)
-#define N_BASES (N_HEROIS/5)
-#define N_MISSOES (T_FIM_DO_MUNDO/100)
-#define N_COMPOSTOS_V (N_HABILIDADES*3)
-
 #include "conjunto.h"
 #include "lista.h"
 #include "fila.h"
@@ -45,15 +36,16 @@ struct missao{
 
 struct mundo{
     int n_herois;
-    struct heroi *herois;
+    struct heroi **herois;
     int n_bases;
-    struct base *bases;
+    struct base **bases;
     int n_missoes;
-    struct missao *missoes;
+    struct missao **missoes;
     int n_habilidades;
     int n_compostosV;
     struct coord tam;
     int relogio;
+    struct fprio *LEF;
 };
 
 #endif

@@ -10,7 +10,7 @@ somar com o valor minimo garante que o intervalo comece no valor minimo
 
 int inicializa_heroi(struct mundo *w, int id){
     struct heroi *h;
-    int i, hab;
+    int i, hab, cap;
 
     if(!(h = malloc(sizeof(struct heroi))))
         return 0;
@@ -19,23 +19,56 @@ int inicializa_heroi(struct mundo *w, int id){
     h->experiencia = 0;
     h->paciencia = P_MIN + rand()%(P_MAX-P_MIN+1);
     h->velocidade = V_MIN + rand()%(V_MAX-V_MIN+1);
-    h->habilidades->cap = HAB_MIN + rand()%(HAB_MAX-HAB_MIN+1);
-    for(i=0;i < h->habilidades->cap;i++){
+    cap = HAB_MIN + rand()%(HAB_MAX-HAB_MIN+1);
+    h->habilidades = cjto_cria(cap);
+    for(i=0;i < cap;i++){
         hab = 1  + rand()%(N_HABILIDADES+1);
         cjto_insere(h->habilidades,hab);
     }
 
     w->herois[id] = h;
+
+    return 1;
 }
 
 int inicializa_base(struct mundo *w, int id){
     struct base *b;
 
+    if(!(b = malloc(sizeof(struct base))))
+        return 0;
+
     b->id = id; 
+    b->local.x = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    b->local.y = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    b->lotacao = LOT_MIN + rand()%(LOT_MAX-LOT_MIN+1);
+    b->presentes = cjto_cria(0);
+    b->fila_herois = fila_cria();
+
+    w->bases[id] = b;
+
+    return 1;
 }
 
 int inicializa_missao(struct mundo *w, int id){
+    struct missao *m;
+    int cap, i, hab;
 
+    if(!(m = malloc(sizeof(struct missao))))
+        return 0;
+
+    m->id = id;
+    m->local.x = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    m->local.y = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    cap = HAB_N_MIN + rand()%(HAB_N_MAX-HAB_N_MIN+1);
+    m->habilidades = cjto_cria(cap);
+    for(i=0;i < cap;i++){
+        hab = 1  + rand()%(N_HABILIDADES+1);
+        cjto_insere(m->habilidades,hab);
+    }
+
+    w->missoes[id] = m;
+
+    return 1;
 }
 
 int inicializa_mundo(struct mundo *w){
@@ -52,4 +85,9 @@ int inicializa_mundo(struct mundo *w){
 
     for(i=0;i < w->n_missoes;i++)
         inicializa_missao(w,i);
+
+    w->relogio = T_INICIO;
+    w->LEF = fprio_cria();
+
+    return 1;
 }
