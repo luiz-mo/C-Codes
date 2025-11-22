@@ -13,6 +13,7 @@ struct heroi{
     int velocidade;
     int experiencia;
     int base;
+    int vivo; /*1 se vivo, 0 se morto*/
 };
 
 struct coord{
@@ -24,7 +25,7 @@ struct base{
     int id;
     int lotacao;
     struct cjto_t *presentes;
-    struct fila_t *fila_herois;
+    struct lista *fila_espera;
     struct coord local;
 };
 
@@ -44,7 +45,7 @@ struct mundo{
     int n_habilidades;
     int n_compostosV;
     struct coord tam;
-    int relogio;
+    int relogio;    
     struct fprio *LEF;
 };
 

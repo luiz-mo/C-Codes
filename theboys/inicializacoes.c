@@ -16,9 +16,12 @@ int inicializa_heroi(struct mundo *w, int id){
         return 0;
     
     h->id = id;
+
     h->experiencia = 0;
     h->paciencia = P_MIN + rand()%(P_MAX-P_MIN+1);
     h->velocidade = V_MIN + rand()%(V_MAX-V_MIN+1);
+    h->vivo = 1; 
+    
     cap = HAB_MIN + rand()%(HAB_MAX-HAB_MIN+1);
     h->habilidades = cjto_cria(cap);
     for(i=0;i < cap;i++){
@@ -38,11 +41,13 @@ int inicializa_base(struct mundo *w, int id){
         return 0;
 
     b->id = id; 
+
     b->local.x = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
     b->local.y = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+
     b->lotacao = LOT_MIN + rand()%(LOT_MAX-LOT_MIN+1);
     b->presentes = cjto_cria(0);
-    b->fila_herois = fila_cria();
+    b->fila_espera = lista_cria();
 
     w->bases[id] = b;
 
@@ -57,8 +62,10 @@ int inicializa_missao(struct mundo *w, int id){
         return 0;
 
     m->id = id;
+
     m->local.x = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
     m->local.y = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    
     cap = HAB_N_MIN + rand()%(HAB_N_MAX-HAB_N_MIN+1);
     m->habilidades = cjto_cria(cap);
     for(i=0;i < cap;i++){

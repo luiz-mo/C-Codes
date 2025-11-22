@@ -38,7 +38,6 @@ struct fila_t *fila_destroi (struct fila_t *f){
 
     while(aux != NULL){
         prox = aux->prox;
-        free(aux->item);
         free(aux);
         aux = prox;
     }
@@ -52,23 +51,25 @@ struct fila_t *fila_destroi (struct fila_t *f){
 int fila_insere (struct fila_t *f, int item){
     struct fila_nodo_t *n, *aux;
 
-    if(!f || !item)
-        return -1;
+    if(!f)
+        return 0;
 
     if(!(n = malloc(sizeof(struct fila_nodo_t))))
-        return -1;
+        return 0;
 
     n->item = item;
     n->prox = NULL;
 
-    /*checa caso de fila vazia*/
+    /*checa se fila esta vazia ou nao*/
     if(f->num == 0)
         f->prim = n;
+    else
+        f->fim->prox = n;
 
     f->fim = n;
     f->num++;
 
-    return f->num;
+    return 1;
 }
 
 int fila_retira (struct fila_t *f, int *item){
@@ -78,10 +79,14 @@ int fila_retira (struct fila_t *f, int *item){
         return 0;
 
     aux = f->prim; /*guarda o ponteiro para o nodo para liberar depois*/
-    item = f->prim->item; /*retorna o item retirado no parametro *item*/
+    *item = f->prim->item; /*retorna o item retirado no parametro *item*/
 
     f->prim = f->prim->prox; /*remove o primeiro*/
     free(aux);
+
+    f->num--;
+    if(f->num == 0)
+        f->fim = NULL;
 
     return 1;
 }
