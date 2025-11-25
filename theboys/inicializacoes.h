@@ -29,12 +29,14 @@
 #include "fila.h"
 #include "fprio.h"
 
+int aleat(int min, int max);
+
 int inicializa_heroi(struct mundo *w, int id);
 
 int inicializa_base(struct mundo *w, int id);
 
 int inicializa_missao(struct mundo *w, int id);
 
-int inicializa_mundo(struct mundo *w);
+int inicializa_mundo();
 
 #endif

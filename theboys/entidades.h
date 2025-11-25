@@ -27,12 +27,14 @@ struct base{
     struct cjto_t *presentes;
     struct lista *fila_espera;
     struct coord local;
+    struct cjto_t *habilidades; /*habilidades dos herois da base*/
 };
 
 struct missao{
     int id;
     struct cjto_t *habilidades;
     struct coord local;
+    int cumprida; /*1 se cumprida, 0 caso contrario*/
 };
 
 struct mundo{

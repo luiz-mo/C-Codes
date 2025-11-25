@@ -61,16 +61,11 @@ struct morre{
     int base;
 };
 
-struct missao{
-
-};
-
-
 int evento_chega(struct mundo *w, struct heroi *h, struct base *b);
 
 int evento_espera(struct mundo *w, struct heroi *h, struct base *b);
 
-int evento_desiste(struct mundo *w, struct heroi *h, struct base *b);
+int evento_desiste(struct mundo *w, struct heroi *h);
 
 int evento_avisa(struct mundo *w, struct base *b);
 
@@ -82,7 +77,7 @@ int evento_viaja(struct mundo *w, struct heroi *h, struct base *d);
 
 int evento_morre(struct mundo *w, struct heroi *h, struct base *b);
 
-int evento_missao(struct mundo *w, struct heroi *h, struct base *b);
+int evento_missao(struct mundo *w, struct missao *m);
 
 int evento_fim(struct mundo *w);
 

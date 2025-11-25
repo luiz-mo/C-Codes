@@ -5,11 +5,12 @@
 #include "fprio.h"
 #include "lista.h"
 #include "eventos.h"
+#include "inicializacoes.h"
 
-int calculo_distancia(struct base *b1, struct base *b2){
+int calculo_distancia(struct coord *c1, struct coord *c2){
     int deltaX, deltaY;
-    deltaX = b2->local.x - b1->local.x;
-    deltaY = b2->local.y - b1->local.y;
+    deltaX = c2->x - c1->x;
+    deltaY = c2->y - c1->y;
     return sqrt(deltaX * deltaX + deltaY*deltaY);
 }
 
@@ -20,7 +21,7 @@ int evento_chega(struct mundo *w, struct heroi *h, struct base *b){
     if(!(h->vivo))
         return 0;
 
-    if(b->presentes->num < b->lotacao && lista_vazia(b->fila_espera))
+    if(cjto_card(b->presentes) < b->lotacao && lista_vazia(b->fila_espera))
         espera = 1;
     else
         espera = h->paciencia > (10 * lista_tamanho(b->fila_espera));
@@ -82,7 +83,7 @@ int evento_desiste(struct mundo *w, struct heroi *h){
     if(!(h->vivo))
         return 0;
 
-    destino = rand()%w->n_bases + 1; /*numero de 0 a n_bases*/
+    destino = aleat(0,N_BASES-1); /*numero de 0 a n_bases-1*/
 
     if(!(evento = malloc(sizeof(struct viaja))))
         return 0;
@@ -130,7 +131,7 @@ int evento_entra(struct mundo *w, struct heroi *h, struct base *b){
     if(!(evento = malloc(sizeof(struct sai))))
         return 0;
 
-    TPB = 15 + h->paciencia * (1+rand() % 20); /*aleatorio de 1 a 20*/
+    TPB = 15 + h->paciencia * aleat(1,20); /*aleatorio de 1 a 20*/
 
     evento->tempo = w->relogio + TPB;
     evento->heroi = h->id;
@@ -151,7 +152,7 @@ int evento_sai(struct mundo *w, struct heroi *h, struct base *b){
 
     cjto_retira(b->presentes,h->id);
 
-    destino = rand() % w->n_bases+1;
+    destino = aleat(0,N_BASES-1);
 
     if(!(evento1 = malloc(sizeof(struct viaja))))
         return 0;
@@ -180,7 +181,7 @@ int evento_viaja(struct mundo *w, struct heroi *h, struct base *d){
     if(!(h->vivo))
         return 0;
 
-    distancia = calculo_distancia(h->base,d);
+    distancia = calculo_distancia(&w->bases[h->base]->local,&d->local);
     duracao = distancia / h->velocidade;
 
     if(!(evento = malloc(sizeof(struct chega))))
@@ -205,15 +206,28 @@ int evento_morre(struct mundo *w, struct heroi *h, struct base *b){
         return 0;
 
     evento->tempo = w->relogio;
-    evento->base = b;
+    evento->base = b->id;
 
     fprio_insere(w->LEF,evento,AVISA,evento->tempo);
 
     return 1;
 }
 
-int evento_missao(struct mundo *w, struct heroi *h, struct base *b){
-    
+int evento_missao(struct mundo *w, struct missao *m){
+    int BMP, i, j; /*id da base mais proxima*/
+    BMP = -1;
+
+    for(i=0;i <= w->n_bases;i++){
+        for(j=0;i < w->bases[i]->presentes; j++){
+            cjto_insere(hab_base,)
+        }
+        calculo_distancia(&m->local,&w->bases[i]->local);
+        if(!(cjto_iguais(m->habilidades,w->bases[i]->)))
+    }
+    if(BMP >= 0){
+        m->cumprida = 1;
+
+    }
 }
 
 int evento_fim(struct mundo *w){

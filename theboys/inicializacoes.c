@@ -2,11 +2,11 @@
 #include "conjunto.h"
 #include "entidades.h"
 
-/*
-para as chamadas de rand:
-somar com o valor minimo garante que o intervalo comece no valor minimo 
-%(maximo-minimo-1) delimita o tamanho do intervalo 
-*/
+
+/*retorna um numero aleatorio no intervalo de min ate max*/
+int aleat(int min, int max){
+    return min+rand()%(max-min+1);
+}
 
 int inicializa_heroi(struct mundo *w, int id){
     struct heroi *h;
@@ -18,14 +18,14 @@ int inicializa_heroi(struct mundo *w, int id){
     h->id = id;
 
     h->experiencia = 0;
-    h->paciencia = P_MIN + rand()%(P_MAX-P_MIN+1);
-    h->velocidade = V_MIN + rand()%(V_MAX-V_MIN+1);
+    h->paciencia = aleat(P_MIN,P_MAX);
+    h->velocidade = aleat(V_MIN,V_MAX);
     h->vivo = 1; 
     
-    cap = HAB_MIN + rand()%(HAB_MAX-HAB_MIN+1);
+    cap = aleat(HAB_MIN,HAB_MAX);
     h->habilidades = cjto_cria(cap);
     for(i=0;i < cap;i++){
-        hab = 1  + rand()%(N_HABILIDADES+1);
+        hab = aleat(0,w->n_habilidades-1);
         cjto_insere(h->habilidades,hab);
     }
 
@@ -42,12 +42,13 @@ int inicializa_base(struct mundo *w, int id){
 
     b->id = id; 
 
-    b->local.x = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
-    b->local.y = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    b->local.x = aleat(COORD_MIN,COORD_MAX);
+    b->local.y = aleat(COORD_MIN,COORD_MAX);
 
-    b->lotacao = LOT_MIN + rand()%(LOT_MAX-LOT_MIN+1);
-    b->presentes = cjto_cria(0);
+    b->lotacao = aleat(LOT_MIN,LOT_MAX);
+    b->presentes = cjto_cria(w->n_herois);
     b->fila_espera = lista_cria();
+    b->habilidades = cjto_cria(w->n_habilidades);
 
     w->bases[id] = b;
 
@@ -63,13 +64,13 @@ int inicializa_missao(struct mundo *w, int id){
 
     m->id = id;
 
-    m->local.x = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
-    m->local.y = COORD_MIN + rand()%(COORD_MAX-COORD_MIN+1);
+    m->local.x = aleat(COORD_MIN,COORD_MAX);
+    m->local.y = aleat(COORD_MIN,COORD_MAX);
     
-    cap = HAB_N_MIN + rand()%(HAB_N_MAX-HAB_N_MIN+1);
+    cap = aleat(HAB_N_MIN,HAB_N_MAX);
     m->habilidades = cjto_cria(cap);
     for(i=0;i < cap;i++){
-        hab = 1  + rand()%(N_HABILIDADES+1);
+        hab = aleat(0,w->n_habilidades-1);
         cjto_insere(m->habilidades,hab);
     }
 
@@ -78,7 +79,8 @@ int inicializa_missao(struct mundo *w, int id){
     return 1;
 }
 
-int inicializa_mundo(struct mundo *w){
+int inicializa_mundo(){
+    struct mundo *w;
     int i;
 
     if(!(w = malloc(sizeof(struct mundo))))
