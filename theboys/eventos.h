@@ -63,7 +63,11 @@ struct morre{
 
 struct ev_missao{
     int tempo;
-    int m;
+    int mis;
+};
+
+struct fim{
+    int tempo;
 };
 
 int evento_chega(struct mundo *w, struct heroi *h, struct base *b);
@@ -85,5 +89,7 @@ int evento_morre(struct mundo *w, struct heroi *h, struct base *b);
 int evento_missao(struct mundo *w, struct missao *m);
 
 int evento_fim(struct mundo *w);
+
+int agenda_eventos(struct mundo *w);
 
 #endif

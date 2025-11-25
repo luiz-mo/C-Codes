@@ -259,15 +259,57 @@ int evento_missao(struct mundo *w, struct missao *m){
         fprio_insere(w->LEF,evento,MORRE,evento->tempo);
     }
     else{
-        struct missao *evento;
+        struct ev_missao *evento;
 
         if(!(evento = malloc(sizeof(struct missao))))
             return 0;
 
-        e
+        evento->tempo = w->relogio + 24*60; /*agenda missao para o dia seguinte*/
+        evento->mis = m->id;
+        fprio_insere(w->LEF,evento,MISSAO,evento->tempo);
     }
 }
 
 int evento_fim(struct mundo *w){
 
+}
+
+int agenda_eventos(struct mundo *w){
+    int i, base, tempo;
+    
+    for(i=0;i < w->n_herois;i++){
+        struct chega *evento;
+
+        if(!(evento = malloc(sizeof(struct chega))))
+            return 0;
+
+        evento->base = aleat(0,w->n_bases-1);
+        evento->heroi = i;
+        evento->tempo = aleat(0,4320); /*4320 = 3 dias*/
+
+        fprio_insere(w->LEF,evento,CHEGA,evento->tempo);
+    }
+
+    for(i=0;i < w->n_missoes;i++){
+        struct ev_missao *evento;
+
+        if(!(evento = malloc(sizeof(struct ev_missao))))
+            return 0;
+
+        evento->tempo = aleat(0,T_FIM_DO_MUNDO);
+        evento->mis = i;
+
+        fprio_insere(w->LEF,evento,MISSAO,evento->tempo);
+    }
+
+    struct fim *evento;
+
+    if(!(malloc(sizeof(struct fim))))
+        return 0;
+
+    evento->tempo = T_FIM_DO_MUNDO;
+
+    fprio_insere(w->LEF,evento,FIM,evento->tempo);
+
+    return 1;
 }

@@ -80,7 +80,7 @@ int inicializa_missao(struct mundo *w, int id){
     return 1;
 }
 
-int inicializa_mundo(){
+struct mundo * inicializa_mundo(){
     struct mundo *w;
     int i;
 
@@ -91,7 +91,7 @@ int inicializa_mundo(){
     w->n_compostosV = N_COMPOSTOS_V;
 
     if(!(w = malloc(sizeof(struct mundo))))
-        return 0;
+        return NULL;
 
     for(i=0;i < w->n_herois;i++)
         inicializa_heroi(w,i);
@@ -105,5 +105,5 @@ int inicializa_mundo(){
     w->relogio = T_INICIO;
     w->LEF = fprio_cria();
 
-    return 1;
+    return w;
 }

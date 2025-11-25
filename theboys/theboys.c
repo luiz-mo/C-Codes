@@ -10,15 +10,20 @@
 #include "fprio.h"
 #include "entidades.h"
 #include "inicializacoes.h"
-
+#include "eventos.h"
 
 // programa principal
 int main (){
     struct mundo *w;
+    int id_evento;
     srand(0);
 
-    inicializa_mundo(w);
+    w = inicializa_mundo;
+    agenda_eventos(w);
 
+    while(w->relogio < T_FIM_DO_MUNDO){
+        fprio_retira()
+    }
     
   
     // destruir o mundo
