@@ -63,6 +63,7 @@ int inicializa_missao(struct mundo *w, int id){
         return 0;
 
     m->id = id;
+    m->cumprida = 0;
 
     m->local.x = aleat(COORD_MIN,COORD_MAX);
     m->local.y = aleat(COORD_MIN,COORD_MAX);
@@ -82,6 +83,12 @@ int inicializa_missao(struct mundo *w, int id){
 int inicializa_mundo(){
     struct mundo *w;
     int i;
+
+    w->n_bases = N_BASES;
+    w->n_herois = N_HEROIS;
+    w->n_missoes = N_MISSOES;
+    w->n_habilidades = N_HABILIDADES;
+    w->n_compostosV = N_COMPOSTOS_V;
 
     if(!(w = malloc(sizeof(struct mundo))))
         return 0;

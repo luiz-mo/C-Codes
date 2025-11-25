@@ -214,19 +214,57 @@ int evento_morre(struct mundo *w, struct heroi *h, struct base *b){
 }
 
 int evento_missao(struct mundo *w, struct missao *m){
-    int BMP, i, j; /*id da base mais proxima*/
+    int BMP, i, idMaisXP, baseMaisXp; 
     BMP = -1;
 
     for(i=0;i <= w->n_bases;i++){
-        for(j=0;i < w->bases[i]->presentes; j++){
-            cjto_insere(hab_base,)
-        }
-        calculo_distancia(&m->local,&w->bases[i]->local);
-        if(!(cjto_iguais(m->habilidades,w->bases[i]->)))
+        if(!(cjto_iguais(m->habilidades,w->bases[i]->habilidades)))
+            continue;
+        if(calculo_distancia(&m->local,&w->bases[i]->local) < w->bases[BMP]->)
     }
     if(BMP >= 0){
         m->cumprida = 1;
+        for(i=0;i < w->n_herois;i++)
+            if(cjto_pertence(w->bases[BMP],w->herois[i]))
+                w->herois[i]->experiencia++;
+    }
+    else if(w->n_compostosV > 0 && w->relogio % 2500 == 0){
+        idMaisXP = 0; /*id do heroi com mais xp, inicia no heroi 0*/
+        baseMaisXp = w->herois[idMaisXP]->base; /*guarda a base do heroi de mais xp*/
 
+        w->n_compostosV--;
+        m->cumprida = 1;
+        
+        /*encontra o heroi com mais experiencia para usar o compostoV e sua base para incrementar a experiencia*/
+        for(i=1;i < w->n_herois;i++)
+            if(w->herois[i]->experiencia > w->herois[idMaisXP]->experiencia){
+                idMaisXP = i;
+                baseMaisXp = w->herois[idMaisXP]->base;
+            }
+        
+        /*incrementa xp dos herois da mesma base do heroi que tomou o compostoV*/
+        for(i=0;i < w->n_herois;i++)
+            if(cjto_pertence(w->bases[baseMaisXp],w->herois[i]))
+                w->herois[i]->experiencia++;
+
+        struct morre *evento;
+
+        if(!(evento = malloc(sizeof(struct morre))))
+            return 0;
+
+        evento->tempo = w->relogio;
+        evento->base = baseMaisXp;
+        evento->heroi = idMaisXP;
+            
+        fprio_insere(w->LEF,evento,MORRE,evento->tempo);
+    }
+    else{
+        struct missao *evento;
+
+        if(!(evento = malloc(sizeof(struct missao))))
+            return 0;
+
+        e
     }
 }
 

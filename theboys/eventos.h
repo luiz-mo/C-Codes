@@ -61,6 +61,11 @@ struct morre{
     int base;
 };
 
+struct ev_missao{
+    int tempo;
+    int m;
+};
+
 int evento_chega(struct mundo *w, struct heroi *h, struct base *b);
 
 int evento_espera(struct mundo *w, struct heroi *h, struct base *b);
