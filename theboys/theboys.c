@@ -15,14 +15,45 @@
 // programa principal
 int main (){
     struct mundo *w;
-    int id_evento;
+    void *evento;
+    int id_evento, tipo, tempo;
     srand(0);
 
-    w = inicializa_mundo;
+    w = inicializa_mundo();
     agenda_eventos(w);
 
     while(w->relogio < T_FIM_DO_MUNDO){
-        fprio_retira()
+        evento = fprio_retira(w->LEF,&tipo,&tempo);
+        w->relogio = tempo;
+        switch(tipo){
+            case CHEGA:
+                evento_chega(w,evento);
+                break;
+            case ESPERA:
+                evento_espera(w,evento);
+                break;
+            case DESISTE:
+                evento_desiste(w,evento);
+                break;
+            case AVISA:
+                evento_avisa(w,evento);
+                break;
+            case ENTRA:
+                evento_entra(w,evento);
+                break;
+            case SAI:
+                evento_sai(w,evento);
+                break;
+            case VIAJA:
+                evento_viaja(w,evento);
+                break;
+            case MORRE:
+                evento_morre(w,evento);
+                break;
+            case MISSAO:
+                evento_missao(w,evento);
+                break;
+        }
     }
     
   

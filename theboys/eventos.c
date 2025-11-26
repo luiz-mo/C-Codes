@@ -14,7 +14,9 @@ int calculo_distancia(struct coord *c1, struct coord *c2){
     return sqrt(deltaX * deltaX + deltaY*deltaY);
 }
 
-int evento_chega(struct mundo *w, struct heroi *h, struct base *b){
+int evento_chega(struct mundo *w, struct chega *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *b = w->bases[ev->base];
     int espera;
     h->base = b->id;
 
@@ -29,55 +31,59 @@ int evento_chega(struct mundo *w, struct heroi *h, struct base *b){
     
     
     if(espera){
-        struct espera *evento;
+        struct espera *novo_ev;
 
-        if(!(evento = malloc(sizeof(struct espera))))
+        if(!(novo_ev = malloc(sizeof(struct espera))))
             return 0;
 
-        evento->tempo = w->relogio;
-        evento->heroi = h->id;
-        evento->base = b->id;
+        novo_ev->tempo = ev->tempo;
+        novo_ev->heroi = h->id;
+        novo_ev->base = b->id;
 
-        fprio_insere(w->LEF,evento,ESPERA,evento->tempo);
+        fprio_insere(w->LEF,novo_ev,ESPERA,novo_ev->tempo);
 
         return 1;
     }
 
-    struct desiste *evento;
+    struct desiste *novo_ev;
     
-    if(!(evento = malloc(sizeof(struct desiste))))
+    if(!(novo_ev = malloc(sizeof(struct desiste))))
         return 0;
 
-    evento->tempo = w->relogio;
-    evento->heroi = h->id;
-    evento->base = b->id;
+    novo_ev->tempo = ev->tempo;
+    novo_ev->heroi = h->id;
+    novo_ev->base = b->id;
 
-    fprio_insere(w->LEF,evento,DESISTE,evento->tempo);
+    fprio_insere(w->LEF,novo_ev,DESISTE,novo_ev->tempo);
     
     return 1;
 }
 
-int evento_espera(struct mundo *w, struct heroi *h, struct base *b){
-    struct avisa *evento;
+int evento_espera(struct mundo *w, struct espera *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *b = w->bases[ev->base];
+    struct avisa *novo_ev;
 
     if(!(h->vivo))
         return 0;
 
     lista_insere_fim(b->fila_espera,h->id);
 
-    if(!(evento = malloc(sizeof(struct avisa))))
+    if(!(novo_ev = malloc(sizeof(struct avisa))))
         return 0;
 
-    evento->base = b->id;
-    evento->tempo = w->relogio;
+    novo_ev->base = b->id;
+    novo_ev->tempo = ev->tempo;
 
-    fprio_insere(w->LEF,evento,AVISA,evento->tempo);
+    fprio_insere(w->LEF,novo_ev,AVISA,novo_ev->tempo);
 
     return 1;
 }
 
-int evento_desiste(struct mundo *w, struct heroi *h){
-    struct viaja *evento;
+int evento_desiste(struct mundo *w, struct desiste *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *b = w->bases[ev->base];
+    struct viaja *novo_ev;
     int destino;
 
     if(!(h->vivo))
@@ -85,66 +91,71 @@ int evento_desiste(struct mundo *w, struct heroi *h){
 
     destino = aleat(0,N_BASES-1); /*numero de 0 a n_bases-1*/
 
-    if(!(evento = malloc(sizeof(struct viaja))))
+    if(!(novo_ev = malloc(sizeof(struct viaja))))
         return 0;
 
-    evento->tempo = w->relogio;
-    evento->heroi = h->id;
-    evento->destino = destino;
+    novo_ev->tempo = ev->tempo;
+    novo_ev->heroi = h->id;
+    novo_ev->destino = destino;
 
-    fprio_insere(w->LEF,evento,VIAJA,evento->tempo);
+    fprio_insere(w->LEF,novo_ev,VIAJA,novo_ev->tempo);
 
     return 1;
 }
 
-int evento_avisa(struct mundo *w, struct base *b){
-    struct entra *evento;
+int evento_avisa(struct mundo *w, struct avisa *ev){
+    struct base *b = w->bases[ev->base];
     int id; /*id do heroi que vai entrar na base*/
 
-    if(!(evento = malloc(sizeof(struct entra))))
-        return 0;
-
-    while(cjto_card(b->presentes) <= b->lotacao && !(lista_vazia(b->fila_espera))){
+    while(cjto_card(b->presentes) < b->lotacao && !(lista_vazia(b->fila_espera))){
         lista_remove_inicio(b->fila_espera,&id);
         if(!(w->herois[id]->vivo))
             continue;
 
         cjto_insere(b->presentes,id);
 
-        evento->tempo = w->relogio;
-        evento->base = b->id;
-        evento->heroi = id;
+        struct entra *novo_ev;
+        if(!(novo_ev = malloc(sizeof(struct entra))))
+            return 0;
 
-        fprio_insere(w->LEF,evento,ENTRA,evento->tempo);
+        novo_ev->tempo = ev->tempo;
+        novo_ev->base = b->id;
+        novo_ev->heroi = id;
+
+        fprio_insere(w->LEF,novo_ev,ENTRA,novo_ev->tempo);
     }
 
     return 1;
 }
 
-int evento_entra(struct mundo *w, struct heroi *h, struct base *b){
-    struct sai *evento;
+int evento_entra(struct mundo *w, struct entra *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *b = w->bases[ev->base];
+    struct sai *novo_ev;
     int TPB; /*tempo de permanencia na base*/
 
     if(!(h->vivo))
         return 0;
 
-    if(!(evento = malloc(sizeof(struct sai))))
+    if(!(novo_ev = malloc(sizeof(struct sai))))
         return 0;
 
     TPB = 15 + h->paciencia * aleat(1,20); /*aleatorio de 1 a 20*/
 
-    evento->tempo = w->relogio + TPB;
-    evento->heroi = h->id;
-    evento->base = b->id;
+    novo_ev->tempo = ev->tempo + TPB;
+    novo_ev->heroi = h->id;
+    novo_ev->base = b->id;
 
-    fprio_insere(w->LEF,evento,SAI,evento->tempo);
+    fprio_insere(w->LEF,novo_ev,SAI,novo_ev->tempo);
 
     return 1;
 }
 
-int evento_sai(struct mundo *w, struct heroi *h, struct base *b){
-    struct viaja *evento1;
-    struct avisa *evento2;
+int evento_sai(struct mundo *w, struct sai *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *b = w->bases[ev->base];
+    struct viaja *novo_ev1;
+    struct avisa *novo_ev2;
     int destino;
 
     if(!(h->vivo))
@@ -154,28 +165,30 @@ int evento_sai(struct mundo *w, struct heroi *h, struct base *b){
 
     destino = aleat(0,N_BASES-1);
 
-    if(!(evento1 = malloc(sizeof(struct viaja))))
+    if(!(novo_ev1 = malloc(sizeof(struct viaja))))
         return 0;
 
-    if(!(evento2 = malloc(sizeof(struct avisa))))
+    if(!(novo_ev2 = malloc(sizeof(struct avisa))))
         return 0;
 
-    evento1->tempo = w->relogio;
-    evento1->destino = destino;
-    evento1->heroi = h->id;
+    novo_ev1->tempo = ev->tempo;
+    novo_ev1->destino = destino;
+    novo_ev1->heroi = h->id;
 
-    fprio_insere(w->LEF,evento1,VIAJA,evento1->tempo);
+    fprio_insere(w->LEF,novo_ev1,VIAJA,novo_ev1->tempo);
 
-    evento2->tempo = w->relogio;
-    evento2->base = b->id;
+    novo_ev2->tempo = ev->tempo;
+    novo_ev2->base = b->id;
 
-    fprio_insere(w->LEF,evento2,AVISA,evento2->tempo);
+    fprio_insere(w->LEF,novo_ev2,AVISA,novo_ev2->tempo);
 
     return 1;
 }
 
-int evento_viaja(struct mundo *w, struct heroi *h, struct base *d){
-    struct chega *evento;
+int evento_viaja(struct mundo *w, struct viaja *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *d = w->bases[ev->destino]; 
+    struct chega *novo_ev;
     int duracao, distancia;
 
     if(!(h->vivo))
@@ -184,17 +197,21 @@ int evento_viaja(struct mundo *w, struct heroi *h, struct base *d){
     distancia = calculo_distancia(&w->bases[h->base]->local,&d->local);
     duracao = distancia / h->velocidade;
 
-    if(!(evento = malloc(sizeof(struct chega))))
+    if(!(novo_ev = malloc(sizeof(struct chega))))
         return 0;
 
-    evento->tempo = w->relogio + duracao;
-    evento->base = d->id;
+    novo_ev->tempo = ev->tempo + duracao;
+    novo_ev->base = d->id;
 
-    fprio_insere(w->LEF,evento,VIAJA,evento->tempo);
+    fprio_insere(w->LEF,novo_ev,CHEGA,novo_ev->tempo);
+
+    return 1;
 }
 
-int evento_morre(struct mundo *w, struct heroi *h, struct base *b){
-    struct avisa *evento;
+int evento_morre(struct mundo *w, struct morre *ev){
+    struct heroi *h = w->herois[ev->heroi];
+    struct base *b = w->bases[ev->base];
+    struct avisa *novo_ev;
 
     if(!(h->vivo))
         return 0;
@@ -202,13 +219,13 @@ int evento_morre(struct mundo *w, struct heroi *h, struct base *b){
     cjto_retira(b->presentes,h->id);
     h->vivo = 0;
 
-    if(!(evento = malloc(sizeof(struct avisa))))
+    if(!(novo_ev = malloc(sizeof(struct avisa))))
         return 0;
 
-    evento->tempo = w->relogio;
-    evento->base = b->id;
+    novo_ev->tempo = w->relogio;
+    novo_ev->base = b->id;
 
-    fprio_insere(w->LEF,evento,AVISA,evento->tempo);
+    fprio_insere(w->LEF,novo_ev,AVISA,novo_ev->tempo);
 
     return 1;
 }

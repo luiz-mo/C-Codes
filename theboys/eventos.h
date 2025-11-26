@@ -70,23 +70,23 @@ struct fim{
     int tempo;
 };
 
-int evento_chega(struct mundo *w, struct heroi *h, struct base *b);
+int evento_chega(struct mundo *w, struct chega *ev);
 
-int evento_espera(struct mundo *w, struct heroi *h, struct base *b);
+int evento_espera(struct mundo *w, struct espera *ev);
 
-int evento_desiste(struct mundo *w, struct heroi *h);
+int evento_desiste(struct mundo *w, struct desiste *ev);
 
-int evento_avisa(struct mundo *w, struct base *b);
+int evento_avisa(struct mundo *w, struct avisa *ev);
 
-int evento_entra(struct mundo *w, struct heroi *h, struct base *b);
+int evento_entra(struct mundo *w, struct entra *ev);
 
-int evento_sai(struct mundo *w, struct heroi *h, struct base *b);
+int evento_sai(struct mundo *w, struct sai *ev);
 
-int evento_viaja(struct mundo *w, struct heroi *h, struct base *d);
+int evento_viaja(struct mundo *w, struct viaja *ev);
 
-int evento_morre(struct mundo *w, struct heroi *h, struct base *b);
+int evento_morre(struct mundo *w, struct morre *ev);
 
-int evento_missao(struct mundo *w, struct missao *m);
+int evento_missao(struct mundo *w, struct ev_missao *ev);
 
 int evento_fim(struct mundo *w);
 
