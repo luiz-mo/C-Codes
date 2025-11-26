@@ -68,6 +68,7 @@ int inicializa_missao(struct mundo *w, int id){
 
     m->id = id;
     m->cumprida = 0;
+    m->tentativas = 0;
 
     m->local.x = aleat(COORD_MIN,COORD_MAX);
     m->local.y = aleat(COORD_MIN,COORD_MAX);

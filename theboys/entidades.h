@@ -36,6 +36,7 @@ struct missao{
     struct cjto_t *habilidades;
     struct coord local;
     int cumprida; /*1 se cumprida, 0 caso contrario*/
+    int tentativas;
 };
 
 struct mundo{

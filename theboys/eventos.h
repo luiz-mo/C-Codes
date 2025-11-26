@@ -64,7 +64,7 @@ struct morre{
 
 struct ev_missao{
     int tempo;
-    int mis;
+    int missao;
 };
 
 struct fim{

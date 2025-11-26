@@ -16,13 +16,14 @@
 int main (){
     struct mundo *w;
     void *evento;
-    int tipo, tempo;
+    int tipo, tempo, fim;
     srand(0);
 
     w = inicializa_mundo();
     agenda_eventos(w);
+    fim = 0;
 
-    while(){
+    while(!fim){
         evento = fprio_retira(w->LEF,&tipo,&tempo);
         w->relogio = tempo;
         w->eventos_tratados++;
@@ -56,6 +57,7 @@ int main (){
                 break;*/
             case FIM:
                 evento_fim(w);
+                fim = 1;
         }
         free(evento);
     }

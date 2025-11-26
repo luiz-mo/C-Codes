@@ -7,6 +7,79 @@
 #include "eventos.h"
 #include "inicializacoes.h"
 
+void Particao(struct mundo *w, struct missao *m, int v[], int ini, int fim, int *pos_pivo){
+    int i, j, pivo, aux, dist_pivo, dist_i, dist_j;
+    *pos_pivo = ini;
+    pivo = v[*pos_pivo];
+    i = ini+1;
+    j = fim;
+
+    dist_pivo = calculo_distancia(&w->bases[v[*pos_pivo]]->local, &m->local);
+
+    while(i<=j){
+        dist_i = calculo_distancia(&w->bases[v[i]]->local, &m->local);
+
+        while(i<=fim && dist_i <= dist_pivo){
+            i++;
+            /*atualiza o dist_i*/
+            if(i<=fim)
+                dist_i = calculo_distancia(&w->bases[v[i]]->local, &m->local);
+        }
+
+        dist_j = calculo_distancia(&w->bases[v[j]]->local, &m->local);
+        while(j>ini && dist_j> dist_pivo){
+            j--;
+            if(j>ini)
+            dist_j = calculo_distancia(&w->bases[v[j]]->local, &m->local);
+        }
+        if(i<j){
+            aux = v[i];
+            v[i] = v[j];
+            v[j] = aux;
+        }
+    }
+    v[ini] = v[j];
+    v[j] = pivo;
+    *pos_pivo = j;
+}
+
+void QuickSort(struct mundo *w, struct missao *m, int v[], int ini, int fim){
+    int pos_pivo;
+    if(ini<fim){
+        Particao(w,m,v,ini,fim,&pos_pivo);
+        QuickSort(w,m,v,ini,pos_pivo - 1);
+        QuickSort(w,m,v, pos_pivo+1, fim);
+    }
+}
+
+int encontra_BMP(struct mundo *w, struct missao *m){
+    int v[w->n_bases]; /*vetor com os ids das bases*/
+    int i, j;
+
+    /*inicializa o vetor com os ids das bases*/
+    for(i=0;i < w->n_bases;i++)
+        v[i] = w->bases[i]->id;
+
+    QuickSort(w,m,v,0,w->n_bases);
+
+    /*percorre o vetor ordenado verificando se a base cumpre os requisitos da missao*/
+    for(i=0;i < w->n_bases;i++){
+        struct base *b = w->bases[v[i]];
+
+        struct cjto_t *hab_base;
+        hab_base = cjto_cria(w->n_habilidades);
+
+        for(j=0;j < cjto_card(b->presentes);j++)
+            cjto_uniao(hab_base,w->herois[j]->habilidades);
+
+        if(cjto_iguais(hab_base,m->habilidades))
+            return i;
+    }
+
+    /*se chegou aqui, significa que nao achou BMP e retorna -1 como flag*/
+    return -1;
+}
+
 void imprimir_lista (struct lista *l){
     int chave;
 
@@ -272,16 +345,17 @@ int evento_morre(struct mundo *w, struct morre *ev){
 
     return 1;
 }
-/*
-int evento_missao(struct mundo *w, struct missao *m){
-    int BMP, i, idMaisXP, baseMaisXp; 
-    BMP = -1;
 
-    for(i=0;i <= w->n_bases;i++){
-        if(!(cjto_iguais(m->habilidades,w->bases[i]->habilidades)))
-            continue;
-        if(calculo_distancia(&m->local,&w->bases[i]->local) < w->bases[BMP]->)
-    }
+int evento_missao(struct mundo *w, struct ev_missao *ev){
+    int BMP, i, idMaisXP, baseMaisXp; 
+    struct missao *m = w->missoes[ev->missao];
+
+    printf("%6d: MISSAO %d TENT %d HAB REQ: [ ",ev->tempo,m->id,m->tentativas);
+    cjto_imprime(m->habilidades);
+    printf(" ]\n");
+
+    BMP = encontra_BMP(w,m);
+
     if(BMP >= 0){
         m->cumprida = 1;
         for(i=0;i < w->n_herois;i++)
@@ -289,20 +363,20 @@ int evento_missao(struct mundo *w, struct missao *m){
                 w->herois[i]->experiencia++;
     }
     else if(w->n_compostosV > 0 && w->relogio % 2500 == 0){
-        idMaisXP = 0; id do heroi com mais xp, inicia no heroi 0
-        baseMaisXp = w->herois[idMaisXP]->base; guarda a base do heroi de mais xp
+        idMaisXP = 0; /*id do heroi com mais xp, inicia no heroi 0*/
+        baseMaisXp = w->herois[idMaisXP]->base; /*guarda a base do heroi de mais xp*/
 
         w->n_compostosV--;
         m->cumprida = 1;
         
-        encontra o heroi com mais experiencia para usar o compostoV e sua base para incrementar a experiencia
+        /*encontra o heroi com mais experiencia para usar o compostoV e sua base para incrementar a experiencia*/
         for(i=1;i < w->n_herois;i++)
             if(w->herois[i]->experiencia > w->herois[idMaisXP]->experiencia){
                 idMaisXP = i;
                 baseMaisXp = w->herois[idMaisXP]->base;
             }
         
-        incrementa xp dos herois da mesma base do heroi que tomou o compostoV
+        /*incrementa xp dos herois da mesma base do heroi que tomou o compostoV*/
         for(i=0;i < w->n_herois;i++)
             if(cjto_pertence(w->bases[baseMaisXp],w->herois[i]))
                 w->herois[i]->experiencia++;
@@ -324,12 +398,11 @@ int evento_missao(struct mundo *w, struct missao *m){
         if(!(evento = malloc(sizeof(struct missao))))
             return 0;
 
-        evento->tempo = w->relogio + 24*60; agenda missao para o dia seguinte
-        evento->mis = m->id;
+        evento->tempo = w->relogio + 24*60; /*agenda missao para o dia seguinte*/
+        evento->missao = m->id;
         fprio_insere(w->LEF,evento,MISSAO,evento->tempo);
     }
 }
-*/
 
 int evento_fim(struct mundo *w){
     struct base *b;
@@ -378,7 +451,7 @@ int agenda_eventos(struct mundo *w){
             return 0;
 
         evento->tempo = aleat(0,T_FIM_DO_MUNDO);
-        evento->mis = i;
+        evento->missao = i;
 
         fprio_insere(w->LEF,evento,MISSAO,evento->tempo);
     }
