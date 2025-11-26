@@ -27,6 +27,8 @@ struct base{
     struct cjto_t *presentes;
     struct lista *fila_espera;
     struct coord local;
+    int max_espera;
+    int missoes_feitas;
 };
 
 struct missao{
@@ -47,7 +49,8 @@ struct mundo{
     int n_compostosV;
     struct coord tam;
     int relogio;    
-    struct fprio *LEF;
+    struct fprio_t *LEF;
+    int eventos_tratados;
 };
 
 #endif

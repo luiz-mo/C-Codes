@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "inicializacoes.h"
 #include "conjunto.h"
 #include "entidades.h"
@@ -10,7 +12,7 @@ int aleat(int min, int max){
 
 int inicializa_heroi(struct mundo *w, int id){
     struct heroi *h;
-    int i, hab, cap;
+    int i, hab, qtd_hab;
 
     if(!(h = malloc(sizeof(struct heroi))))
         return 0;
@@ -22,9 +24,9 @@ int inicializa_heroi(struct mundo *w, int id){
     h->velocidade = aleat(V_MIN,V_MAX);
     h->vivo = 1; 
     
-    cap = aleat(HAB_MIN,HAB_MAX);
-    h->habilidades = cjto_cria(cap);
-    for(i=0;i < cap;i++){
+    qtd_hab = aleat(HAB_MIN,HAB_MAX); /*wuantidade de habilidades que o heroi vai ter*/
+    h->habilidades = cjto_cria(w->n_habilidades);
+    for(i=0;i < qtd_hab;i++){
         hab = aleat(0,w->n_habilidades-1);
         cjto_insere(h->habilidades,hab);
     }
@@ -42,13 +44,15 @@ int inicializa_base(struct mundo *w, int id){
 
     b->id = id; 
 
+    b->missoes_feitas = 0;
+
     b->local.x = aleat(COORD_MIN,COORD_MAX);
     b->local.y = aleat(COORD_MIN,COORD_MAX);
 
     b->lotacao = aleat(LOT_MIN,LOT_MAX);
     b->presentes = cjto_cria(w->n_herois);
     b->fila_espera = lista_cria();
-    b->habilidades = cjto_cria(w->n_habilidades);
+    b->max_espera = 0;
 
     w->bases[id] = b;
 
@@ -57,7 +61,7 @@ int inicializa_base(struct mundo *w, int id){
 
 int inicializa_missao(struct mundo *w, int id){
     struct missao *m;
-    int cap, i, hab;
+    int i, hab, qtd_hab;
 
     if(!(m = malloc(sizeof(struct missao))))
         return 0;
@@ -68,9 +72,9 @@ int inicializa_missao(struct mundo *w, int id){
     m->local.x = aleat(COORD_MIN,COORD_MAX);
     m->local.y = aleat(COORD_MIN,COORD_MAX);
     
-    cap = aleat(HAB_N_MIN,HAB_N_MAX);
-    m->habilidades = cjto_cria(cap);
-    for(i=0;i < cap;i++){
+    qtd_hab = aleat(HAB_N_MIN,HAB_N_MAX);
+    m->habilidades = cjto_cria(w->n_habilidades);
+    for(i=0;i < qtd_hab;i++){
         hab = aleat(0,w->n_habilidades-1);
         cjto_insere(m->habilidades,hab);
     }
@@ -80,17 +84,27 @@ int inicializa_missao(struct mundo *w, int id){
     return 1;
 }
 
-struct mundo * inicializa_mundo(){
+struct mundo *inicializa_mundo(){
     struct mundo *w;
     int i;
+
+    if(!(w = malloc(sizeof(struct mundo))))
+        return NULL;
 
     w->n_bases = N_BASES;
     w->n_herois = N_HEROIS;
     w->n_missoes = N_MISSOES;
     w->n_habilidades = N_HABILIDADES;
     w->n_compostosV = N_COMPOSTOS_V;
+    w->eventos_tratados = 0;
 
-    if(!(w = malloc(sizeof(struct mundo))))
+    if(!(w->herois = malloc(w->n_herois * sizeof(struct heroi *))))
+        return NULL;
+
+    if(!(w->bases = malloc(w->n_bases * sizeof(struct base *))))
+        return NULL;
+
+    if(!(w->missoes = malloc(w->n_missoes * sizeof(struct missao *))))
         return NULL;
 
     for(i=0;i < w->n_herois;i++)

@@ -2,7 +2,7 @@
 #define INICIALIZACOES
 
 #define T_INICIO 0
-#define T_FIM_DO_MUNDO 525600
+#define T_FIM_DO_MUNDO 100000
 #define N_TAMANHO_MUNDO 20000
 #define N_HABILIDADES 10
 #define N_HEROIS (N_HABILIDADES*5)
@@ -24,6 +24,7 @@
 #define HAB_N_MIN 6 /*HAB_N eh o numero de habilidades necessarias para a missao*/
 #define HAB_N_MAX 10 
 
+#include "entidades.h"
 #include "conjunto.h"
 #include "lista.h"
 #include "fila.h"
@@ -37,6 +38,6 @@ int inicializa_base(struct mundo *w, int id);
 
 int inicializa_missao(struct mundo *w, int id);
 
-int inicializa_mundo();
+struct mundo *inicializa_mundo();
 
 #endif

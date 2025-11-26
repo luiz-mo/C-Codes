@@ -49,7 +49,7 @@ struct fila_t *fila_destroi (struct fila_t *f){
 }
 
 int fila_insere (struct fila_t *f, int item){
-    struct fila_nodo_t *n, *aux;
+    struct fila_nodo_t *n;
 
     if(!f)
         return 0;
@@ -111,5 +111,5 @@ void fila_imprime (struct fila_t *f){
         aux = aux->prox;
     }
 
-    printf("%d", f->fim->item); /*para imprimir o ultimo sem espaco no fim*/
+    printf("%2d", f->fim->item); /*para imprimir o ultimo sem espaco no fim*/
 }

@@ -16,15 +16,16 @@
 int main (){
     struct mundo *w;
     void *evento;
-    int id_evento, tipo, tempo;
+    int tipo, tempo;
     srand(0);
 
     w = inicializa_mundo();
     agenda_eventos(w);
 
-    while(w->relogio < T_FIM_DO_MUNDO){
+    while(){
         evento = fprio_retira(w->LEF,&tipo,&tempo);
         w->relogio = tempo;
+        w->eventos_tratados++;
         switch(tipo){
             case CHEGA:
                 evento_chega(w,evento);
@@ -50,10 +51,13 @@ int main (){
             case MORRE:
                 evento_morre(w,evento);
                 break;
-            case MISSAO:
+   /*         case MISSAO:
                 evento_missao(w,evento);
-                break;
+                break;*/
+            case FIM:
+                evento_fim(w);
         }
+        free(evento);
     }
     
   
