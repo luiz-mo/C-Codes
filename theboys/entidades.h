@@ -52,6 +52,8 @@ struct mundo{
     int relogio;    
     struct fprio_t *LEF;
     int eventos_tratados;
+    int herois_mortos;
+    int missoes_cumpridas;
 };
 
 #endif

@@ -12,6 +12,36 @@
 #include "inicializacoes.h"
 #include "eventos.h"
 
+void destroi_mundo(struct mundo **w){
+    int i;
+
+    for(i=0;i < (*w)->n_herois;i++){
+        struct heroi *h = (*w)->herois[i];
+        h->habilidades = cjto_destroi(h->habilidades);
+        free(h);
+    }
+    free((*w)->herois);
+
+    for(i=0;i < (*w)->n_bases;i++){
+        struct base *b = (*w)->bases[i];
+        b->presentes = cjto_destroi(b->presentes);
+        lista_destroi(&b->fila_espera);
+        free(b);
+    }
+    free((*w)->bases);
+
+    for(i=0;i < (*w)->n_missoes;i++){
+        struct missao *m = (*w)->missoes[i];
+        m->habilidades = cjto_destroi(m->habilidades);
+        free(m);
+    }
+    free((*w)->missoes);
+
+    free((*w)->LEF);
+    free((*w));
+    w = NULL;
+}
+
 // programa principal
 int main (){
     struct mundo *w;
@@ -52,9 +82,9 @@ int main (){
             case MORRE:
                 evento_morre(w,evento);
                 break;
-   /*         case MISSAO:
+            case MISSAO:
                 evento_missao(w,evento);
-                break;*/
+                break;
             case FIM:
                 evento_fim(w);
                 fim = 1;
@@ -62,8 +92,7 @@ int main (){
         free(evento);
     }
     
-  
-    // destruir o mundo
+    destroi_mundo(&w);
 
     return (0) ;
 }

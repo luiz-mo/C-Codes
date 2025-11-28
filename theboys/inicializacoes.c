@@ -98,6 +98,8 @@ struct mundo *inicializa_mundo(){
     w->n_habilidades = N_HABILIDADES;
     w->n_compostosV = N_COMPOSTOS_V;
     w->eventos_tratados = 0;
+    w->herois_mortos = 0;
+    w->missoes_cumpridas = 0;
 
     if(!(w->herois = malloc(w->n_herois * sizeof(struct heroi *))))
         return NULL;
