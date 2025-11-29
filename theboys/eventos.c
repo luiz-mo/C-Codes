@@ -14,7 +14,7 @@ int calculo_distancia(struct coord c1, struct coord c2){
     deltaY = c2.y - c1.y;
 
     /*como sqrt retorna double, tem que converter para int*/
-    return (int) sqrt(deltaX * deltaX + deltaY*deltaY);
+    return  sqrt(deltaX * deltaX + deltaY*deltaY);
 }
 
 void Particao(struct mundo *w, struct missao *m, int v[], int ini, int fim, int *pos_pivo){
@@ -449,7 +449,7 @@ int evento_missao(struct mundo *w, struct ev_missao *ev){
             if(!(evento = malloc(sizeof(struct morre))))
                 return 0;
 
-            evento->tempo = w->relogio;
+            evento->tempo = ev->tempo;
             evento->base = baseMaisProx;
             evento->heroi = idMaisXp;
             evento->mis = m->id;

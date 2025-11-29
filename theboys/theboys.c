@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "conjunto.h"
 #include "lista.h"
@@ -49,7 +50,7 @@ int main (){
     struct mundo *w;
     void *evento;
     int tipo, tempo, fim;
-    srand(0);
+    srand(time(0));
 
     w = inicializa_mundo();
     agenda_eventos(w);
