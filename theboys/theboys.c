@@ -14,6 +14,8 @@
 
 void destroi_mundo(struct mundo **w){
     int i;
+    if(!*w)
+        return;
 
     for(i=0;i < (*w)->n_herois;i++){
         struct heroi *h = (*w)->herois[i];
@@ -37,9 +39,9 @@ void destroi_mundo(struct mundo **w){
     }
     free((*w)->missoes);
 
-    free((*w)->LEF);
+    fprio_destroi((*w)->LEF);
     free((*w));
-    w = NULL;
+    *w = NULL;
 }
 
 // programa principal

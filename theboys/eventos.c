@@ -13,7 +13,8 @@ int calculo_distancia(struct coord c1, struct coord c2){
     deltaX = c2.x - c1.x;
     deltaY = c2.y - c1.y;
 
-    return sqrt(deltaX * deltaX + deltaY*deltaY);
+    /*como sqrt retorna double, tem que converter para int*/
+    return (int) sqrt(deltaX * deltaX + deltaY*deltaY);
 }
 
 void Particao(struct mundo *w, struct missao *m, int v[], int ini, int fim, int *pos_pivo){
@@ -80,10 +81,11 @@ int evento_chega(struct mundo *w, struct chega *ev){
     struct heroi *h = w->herois[ev->heroi];
     struct base *b = w->bases[ev->base];
     int espera;
-    h->base = b->id;
 
     if(!(h->vivo))
         return 0;
+
+    h->base = b->id;   
 
     if(cjto_card(b->presentes) < b->lotacao && lista_vazia(b->fila_espera))
         espera = 1;
@@ -162,7 +164,7 @@ int evento_desiste(struct mundo *w, struct desiste *ev){
 
     printf("%6d: DESIST HEROI %2d BASE %d\n",ev->tempo,h->id,b->id);
 
-    destino = aleat(0,N_BASES-1); /*numero de 0 a n_bases-1*/
+    destino = aleat(0,w->n_bases-1); /*numero de 0 a n_bases-1*/
 
     if(!(novo_ev = malloc(sizeof(struct viaja))))
         return 0;
@@ -247,7 +249,7 @@ int evento_sai(struct mundo *w, struct sai *ev){
 
     printf("%6d: SAI HEROI %2d BASE %d (%2d/%2d)\n",ev->tempo,h->id,b->id,cjto_card(b->presentes),b->lotacao);
 
-    destino = aleat(0,N_BASES-1);
+    destino = aleat(0,w->n_bases-1);
 
     if(!(novo_ev1 = malloc(sizeof(struct viaja))))
         return 0;
@@ -304,6 +306,7 @@ int evento_morre(struct mundo *w, struct morre *ev){
         return 0;
 
     cjto_retira(b->presentes,h->id);
+    h->base = -1;
     h->vivo = 0;
     w->herois_mortos++;
 
@@ -322,7 +325,7 @@ int evento_morre(struct mundo *w, struct morre *ev){
 
 int evento_missao(struct mundo *w, struct ev_missao *ev){
     int BMP, i,j;
-    int v[w->n_bases]; /*vetor com os ids das bases*/
+    int v[N_BASES]; /*vetor com os ids das bases*/
     struct missao *m = w->missoes[ev->missao];
     struct cjto_t *hab_base;
 
@@ -346,7 +349,7 @@ int evento_missao(struct mundo *w, struct ev_missao *ev){
     for(i=0;i < w->n_bases;i++){
         struct base *b = w->bases[v[i]];
 
-        printf("%6d: MISSAO %d BASE %d DIST %d HEROIS: [ ",w->relogio,m->id,b->id,calculo_distancia(m->local,b->local));
+        printf("%6d: MISSAO %d BASE %d DIST %d HEROIS: [ ",ev->tempo,m->id,b->id,calculo_distancia(m->local,b->local));
         cjto_imprime(b->presentes);
         printf(" ]\n");
 
@@ -355,7 +358,7 @@ int evento_missao(struct mundo *w, struct ev_missao *ev){
         for(j=0;j < w->n_herois;j++){
             if(cjto_pertence(b->presentes,j)){
 
-            printf("%6d: MISSAO %d HAB HEROI %2d: [ ",w->relogio,m->id,w->herois[j]->id);
+            printf("%6d: MISSAO %d HAB HEROI %2d: [ ",ev->tempo,m->id,w->herois[j]->id);
             cjto_imprime(w->herois[j]->habilidades);
             printf(" ]\n");
 
@@ -365,7 +368,7 @@ int evento_missao(struct mundo *w, struct ev_missao *ev){
             }
         }
 
-        printf("%6d: MISSAO %d UNIAO HAB BASE %d: [ ",w->relogio,m->id,w->bases[v[i]]->id);
+        printf("%6d: MISSAO %d UNIAO HAB BASE %d: [ ",ev->tempo,m->id,w->bases[v[i]]->id);
         cjto_imprime(hab_base);
         printf(" ]\n");
 
@@ -415,8 +418,9 @@ int evento_missao(struct mundo *w, struct ev_missao *ev){
                 }
         }
 
-        /*se achar o heroi conclui a missao, senao vai para o ultimo caso*/
+        /*se achou o heroi, conclui a missao, senao vai para o ultimo caso*/
         if(achou){
+            struct cjto_t *hab_base = cjto_cria(w->n_habilidades);
             w->n_compostosV--;
             m->cumprida = 1;
             w->bases[baseMaisProx]->missoes_feitas++;
@@ -498,9 +502,11 @@ int evento_fim(struct mundo *w){
 
     printf("EVENTOS TRATADOS: %d\n",w->eventos_tratados);
     
-    tx_missoes = 100.0 * w->missoes_cumpridas/w->n_missoes; /*taxa de missoes cumpridas*/
+    if(w->n_missoes != 0){
+        tx_missoes = 100.0 * w->missoes_cumpridas/w->n_missoes; /*taxa de missoes cumpridas*/
 
-    printf("MISSOES CUMPRIDAS: %d/%d (%.1f%%)\n",w->missoes_cumpridas,w->n_missoes,tx_missoes);
+        printf("MISSOES CUMPRIDAS: %d/%d (%.1f%%)\n",w->missoes_cumpridas,w->n_missoes,tx_missoes);
+    }
 
     /*acha id da missao com mais e menos tentaivas e calcula media*/
     id_menos_tent = 0;
@@ -514,13 +520,18 @@ int evento_fim(struct mundo *w){
         
         media_tent += w->missoes[i]->tentativas;
     }
-    media_tent /= w->n_missoes;
 
-    printf("TENTATIVAS/MISSAO: MIN %d, MAX %d, MEDIA %.1f\n",w->missoes[id_menos_tent]->tentativas,w->missoes[id_mais_tent]->tentativas,media_tent);
+    if(w->n_missoes != 0){
+        media_tent /= w->n_missoes;
 
-    tx_mortalidade = 100.0 * w->herois_mortos/w->n_herois;
+        printf("TENTATIVAS/MISSAO: MIN %d, MAX %d, MEDIA %.1f\n",w->missoes[id_menos_tent]->tentativas,w->missoes[id_mais_tent]->tentativas,media_tent);
+    }
 
-    printf("TAXA MORTALIDADE: %.1f%%\n",tx_mortalidade);
+    if(w->n_herois != 0){
+        tx_mortalidade = 100.0 * w->herois_mortos/w->n_herois;
+
+        printf("TAXA MORTALIDADE: %.1f%%\n",tx_mortalidade);
+    }
 
     return 1;
 }

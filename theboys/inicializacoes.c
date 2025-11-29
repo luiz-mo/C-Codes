@@ -12,7 +12,6 @@ int aleat(int min, int max){
 
 int inicializa_heroi(struct mundo *w, int id){
     struct heroi *h;
-    int i, hab, qtd_hab;
 
     if(!(h = malloc(sizeof(struct heroi))))
         return 0;
@@ -22,13 +21,15 @@ int inicializa_heroi(struct mundo *w, int id){
     h->experiencia = 0;
     h->paciencia = aleat(P_MIN,P_MAX);
     h->velocidade = aleat(V_MIN,V_MAX);
+    h->base = -1; 
     h->vivo = 1; 
     
-    qtd_hab = aleat(HAB_MIN,HAB_MAX); /*wuantidade de habilidades que o heroi vai ter*/
-    h->habilidades = cjto_cria(w->n_habilidades);
-    for(i=0;i < qtd_hab;i++){
-        hab = aleat(0,w->n_habilidades-1);
-        cjto_insere(h->habilidades,hab);
+    h->habilidades = cjto_aleat(aleat(1,3),N_HABILIDADES);
+
+    /*checa se o conjunto de habilidades foi alocado*/
+    if(!h->habilidades){
+        free(h);
+        return 0;
     }
 
     w->herois[id] = h;
@@ -51,7 +52,22 @@ int inicializa_base(struct mundo *w, int id){
 
     b->lotacao = aleat(LOT_MIN,LOT_MAX);
     b->presentes = cjto_cria(w->n_herois);
+
+    /*checa se o conjunto de presentes foi alocado*/
+    if(!b->presentes){
+        free(b);
+        return 0;
+    }
+
     b->fila_espera = lista_cria();
+
+    /*checa se a fila de espera foi alocada*/
+    if(!b->fila_espera){
+        free(b->presentes);
+        free(b);
+        return 0;
+    }
+
     b->max_espera = 0;
 
     w->bases[id] = b;
@@ -61,7 +77,6 @@ int inicializa_base(struct mundo *w, int id){
 
 int inicializa_missao(struct mundo *w, int id){
     struct missao *m;
-    int i, hab, qtd_hab;
 
     if(!(m = malloc(sizeof(struct missao))))
         return 0;
@@ -73,11 +88,11 @@ int inicializa_missao(struct mundo *w, int id){
     m->local.x = aleat(COORD_MIN,COORD_MAX);
     m->local.y = aleat(COORD_MIN,COORD_MAX);
     
-    qtd_hab = aleat(HAB_N_MIN,HAB_N_MAX);
-    m->habilidades = cjto_cria(w->n_habilidades);
-    for(i=0;i < qtd_hab;i++){
-        hab = aleat(0,w->n_habilidades-1);
-        cjto_insere(m->habilidades,hab);
+    m->habilidades = cjto_aleat(aleat(HAB_N_MIN,HAB_N_MAX),w->n_habilidades);
+
+    if(!m->habilidades){
+        free(m);
+        return 0;
     }
 
     w->missoes[id] = m;
@@ -97,18 +112,29 @@ struct mundo *inicializa_mundo(){
     w->n_missoes = N_MISSOES;
     w->n_habilidades = N_HABILIDADES;
     w->n_compostosV = N_COMPOSTOS_V;
+    w->tam.x = N_TAMANHO_MUNDO;
+    w->tam.y = N_TAMANHO_MUNDO;
     w->eventos_tratados = 0;
     w->herois_mortos = 0;
     w->missoes_cumpridas = 0;
 
-    if(!(w->herois = malloc(w->n_herois * sizeof(struct heroi *))))
+    if(!(w->herois = malloc(w->n_herois * sizeof(struct heroi *)))){
+        free(w);
         return NULL;
+    }
 
-    if(!(w->bases = malloc(w->n_bases * sizeof(struct base *))))
+    if(!(w->bases = malloc(w->n_bases * sizeof(struct base *)))){
+        free(w->herois);
+        free(w);
         return NULL;
+    }
 
-    if(!(w->missoes = malloc(w->n_missoes * sizeof(struct missao *))))
+    if(!(w->missoes = malloc(w->n_missoes * sizeof(struct missao *)))){
+        free(w->herois);
+        free(w->bases);
+        free(w);
         return NULL;
+    }
 
     for(i=0;i < w->n_herois;i++)
         inicializa_heroi(w,i);

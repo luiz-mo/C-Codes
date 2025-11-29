@@ -111,5 +111,5 @@ void fila_imprime (struct fila_t *f){
         aux = aux->prox;
     }
 
-    printf("%2d", f->fim->item); /*para imprimir o ultimo sem espaco no fim*/
+    printf("%d", f->fim->item); /*para imprimir o ultimo sem espaco no fim*/
 }

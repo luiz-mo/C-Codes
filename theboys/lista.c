@@ -31,6 +31,9 @@ struct lista *lista_cria (){
 void lista_destroi (struct lista **lista){
     struct nodo *aux,*prox;
 
+    if(!*lista)
+        return;
+
     aux = (*lista)->ini;
     while(aux != NULL){
         prox = aux->prox;
@@ -198,6 +201,9 @@ int lista_remove_ordenado (struct lista *lista, int chave){
 }
 
 int lista_vazia (struct lista *lista){
+    if(!lista)
+    return 0;
+    
     if(!(lista->tamanho))
         return 1;
 
