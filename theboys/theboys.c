@@ -18,6 +18,7 @@ void destroi_mundo(struct mundo **w){
     if(!*w)
         return;
 
+    /*libera herois*/
     for(i=0;i < (*w)->n_herois;i++){
         struct heroi *h = (*w)->herois[i];
         h->habilidades = cjto_destroi(h->habilidades);
@@ -25,6 +26,7 @@ void destroi_mundo(struct mundo **w){
     }
     free((*w)->herois);
 
+    /*libera bases*/
     for(i=0;i < (*w)->n_bases;i++){
         struct base *b = (*w)->bases[i];
         b->presentes = cjto_destroi(b->presentes);
@@ -33,6 +35,7 @@ void destroi_mundo(struct mundo **w){
     }
     free((*w)->bases);
 
+    /*libera missoes*/
     for(i=0;i < (*w)->n_missoes;i++){
         struct missao *m = (*w)->missoes[i];
         m->habilidades = cjto_destroi(m->habilidades);
@@ -50,9 +53,12 @@ int main (){
     struct mundo *w;
     void *evento;
     int tipo, tempo, fim;
-    srand(time(0));
+    srand(time(NULL));
 
     w = inicializa_mundo();
+    if(!w)
+        return 1; /*encerra execucao com erro*/
+
     agenda_eventos(w);
     fim = 0;
 
@@ -97,6 +103,6 @@ int main (){
     
     destroi_mundo(&w);
 
-    return (0) ;
+    return 0;
 }
 

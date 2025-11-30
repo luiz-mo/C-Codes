@@ -118,17 +118,20 @@ struct mundo *inicializa_mundo(){
     w->herois_mortos = 0;
     w->missoes_cumpridas = 0;
 
+    /*tenta alocar vetor de herois*/
     if(!(w->herois = malloc(w->n_herois * sizeof(struct heroi *)))){
         free(w);
         return NULL;
     }
 
+    /*tenta alocar vetor de bases*/
     if(!(w->bases = malloc(w->n_bases * sizeof(struct base *)))){
         free(w->herois);
         free(w);
         return NULL;
     }
 
+    /*tenta alocar vetor de missoes*/
     if(!(w->missoes = malloc(w->n_missoes * sizeof(struct missao *)))){
         free(w->herois);
         free(w->bases);
@@ -136,17 +139,20 @@ struct mundo *inicializa_mundo(){
         return NULL;
     }
 
+    /*inicializa os herois*/
     for(i=0;i < w->n_herois;i++)
         inicializa_heroi(w,i);
 
+    /*inicializa as bases*/
     for(i=0;i < w->n_bases;i++)
         inicializa_base(w,i);
 
+    /*inicializa as missoes*/
     for(i=0;i < w->n_missoes;i++)
         inicializa_missao(w,i);
 
     w->relogio = T_INICIO;
-    w->LEF = fprio_cria();
+    w->LEF = fprio_cria(); /*cria LEF*/
 
     return w;
 }

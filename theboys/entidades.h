@@ -3,8 +3,12 @@
 
 #include "conjunto.h"
 #include "lista.h"
-#include "fila.h"
 #include "fprio.h"
+
+struct coord{
+    int x;
+    int y;
+};
 
 struct heroi{
     int id;
@@ -16,18 +20,13 @@ struct heroi{
     int vivo; /*1 se vivo, 0 se morto*/
 };
 
-struct coord{
-    int x;
-    int y;
-};
-
 struct base{
     int id;
     int lotacao;
     struct cjto_t *presentes;
     struct lista *fila_espera;
     struct coord local;
-    int max_espera;
+    int max_espera; /*maior tamanho que a fila de espera teve*/
     int missoes_feitas;
 };
 
