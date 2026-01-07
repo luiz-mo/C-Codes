@@ -1,15 +1,15 @@
-void SelectSort();
+void SelectSort(int v[], int n);
 
-void BubbleSort();
+void BubbleSort(int v[], int n);
 
-void QuickSort();
+void QuickSort(int *v, int n);
 
-void InsertSort();
+void InsertSort(int *v, int n);
 
-void HeapSort();
+void HeapSort(int *v, int n);
 
-void ShellSort();
+void ShellSort(int *v, int n);
 
-void RadixSort();
+void RadixSort(int *v, int n);
 
-void CountingSort();
+void CountingSort(int *v, int n);
