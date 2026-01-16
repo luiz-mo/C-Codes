@@ -2,7 +2,7 @@ void SelectSort(int v[], int n);
 
 void BubbleSort(int v[], int n);
 
-void QuickSort(int *v, int n);
+void QuickSort(int *v, int ini, int fim);
 
 void InsertSort(int *v, int n);
 

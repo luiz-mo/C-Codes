@@ -1,4 +1,5 @@
 #include "sorts.h"
+#include "heap.h"
 
 void SelectSort(int v[], int n){
     int menor, i, j, aux;
@@ -63,7 +64,19 @@ void QuickSort(int v[], int ini, int fim){
 }
 
 void InsertSort(int v[], int n){
-    
+    int i, j, aux;
+
+    for(i=1;i < n;i++)
+        for(j=i;j >= 0;j--)
+            if(v[j] < v[j--]){
+                aux = v[j];
+                v[j] = v[j--];
+                v[j--] = v[j];
+            }
+}
+
+void MergeSort(int v[], int n){
+
 }
 
 void HeapSort(int v[], int n){
