@@ -75,8 +75,11 @@ void InsertSort(int v[], int n){
             }
 }
 
-void MergeSort(int v[], int n){
+void MergeSort(int v[], int ini, int fim){
+    int i, j;
 
+    
+    
 }
 
 void HeapSort(int v[], int n){
