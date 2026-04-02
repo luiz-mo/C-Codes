@@ -21,8 +21,7 @@ int gbv_create(const char *filename){
     sb.num_docs = 0;
     sb.offset = sizeof(int) + sizeof(long); /*tamanho do num_docs+offset em bytes*/
 
-    fwrite(&sb.num_docs,sizeof(int),1,f);
-    fwrite(&sb.offset,sizeof(long),1,f);
+    fwrite(&sb,sizeof(struct superBloco),1,f);
 
     fclose(f);
 
@@ -43,13 +42,16 @@ int gbv_open(Library *lib, const char *filename){
 
     fseek(f,sb.offset,SEEK_SET);
 
-    if(sb.num_docs > 0)
-        if(!(lib->docs = malloc(sb.num_docs * sizeof(Document))))
+    if(sb.num_docs > 0){
+        if(!(lib->docs = malloc(sb.num_docs * sizeof(Document)))){
+            fclose(f);
             return 1;
+        }   
+    
+        fread(lib->docs,sizeof(Document),sb.num_docs,f);
+    }     
     else
         lib->docs = NULL;
-
-    fread(lib->docs,sizeof(Document),sb.num_docs,f);
 
     fclose(f);
 
@@ -66,10 +68,16 @@ int gbv_remove(Library *lib, const char *docname){
 }   
 
 int gbv_list(const Library *lib){
-    struct superBloco sb;
-    FILE *f;
+    int i;
+    
+    if(lib->count == 0){
+        printf("Biblioteca vazia\n");
+        return 0;
+    }
 
-    fopen()
+    for
+
+    
 }
 
 int gbv_view(const Library *lib, const char *docname){
