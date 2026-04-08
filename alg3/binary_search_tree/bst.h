@@ -12,7 +12,7 @@ typedef struct{
 
 tree_t *tree_create();
 
-node_t *node_create();
+node_t *node_create(int key);
 
 void inorder_tree_walk(node_t *x);
 

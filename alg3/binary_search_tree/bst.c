@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 
-#include "binary_search_tree.h"
+#include "bst.h"
 
 tree_t *tree_create(){
     tree_t *t;
