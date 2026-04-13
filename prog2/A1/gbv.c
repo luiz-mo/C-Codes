@@ -89,19 +89,43 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     /*procura a posicao de escrever o novo documento*/
     fseek(gbv,sb.offset,SEEK_SET);
     
+    strncpy(new_doc.name,docname,MAX_NAME);
+    new_doc.offset = ftell(gbv);
+
     /*itera enquanto ainda houverem bytes nao lidos*/
-    while((data_read = fread(buffer,1,BUFFER_SIZE,doc) > 0)){
+    while((data_read = fread(buffer,1,BUFFER_SIZE,doc)) > 0){
         fwrite(buffer,1,data_read,gbv); /*escreve na biblioteca o que esta no buffer*/
         doc_size += data_read;
+    } 
+
+    new_doc.size = doc_size;
+    new_doc.date = time(NULL);
+
+    /*aloca memoria para adicionar mais um doc*/
+    if(!(lib->docs = realloc((lib->docs),(lib->count+1) * sizeof(Document)))){
+        fclose(gbv);
+        fclose(doc);
+        
+        return 1;
     }
 
-    strcpy(new_doc.name,docname); 
-    new_doc.offset = ftell(gbv);
-    new_doc.size = doc_size;
-
     lib->docs[lib->count] = new_doc;
+    lib->count++;
     
-    sb.offset
+    sb.offset = ftell(gbv);
+    sb.num_docs = lib->count;
+
+    fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+    /*volta para o inicio e atualiza o superbloco*/
+    fseek(gbv,0,SEEK_SET);
+    fwrite(&sb.num_docs,sizeof(int),1,gbv);
+    fwrite(&sb.offset,sizeof(long),1,gbv);
+
+    fclose(gbv);
+    fclose(doc);
+
+    return 0;
 }
 
 int gbv_remove(Library *lib, const char *docname){
@@ -111,17 +135,20 @@ int gbv_remove(Library *lib, const char *docname){
 int gbv_list(const Library *lib){
     int i;
     
+    printf("Biblioteca vazia\n");
     if(lib->count == 0){
-        printf("Biblioteca vazia\n");
         return 0;
     }
 
     for(i=0; i<lib->count; i++){
         Document d = lib->docs[i];
+        char date[32];
+
+        format_date(d.date,date,64);
 
         printf("Nome: %s\n", d.name);
         printf("Tamanho: %ld bytes\n", d.size);
-        printf("Data de inserção: %s", d.date);
+        printf("Data de inserção: %s", date);
         printf("Offest: %d", d.offset);
     }
 
@@ -132,17 +159,3 @@ int gbv_view(const Library *lib, const char *docname){
 
 }
 
-int gbv_order(Library *lib, const char *archive, const char *criteria){
-    if(strcmp(criteria, "nome"))
-
-    else if(strcmp(criteria, "data"))
-
-    else if(strcmp(criteria, "tamanho"))
-
-    else{
-        printf("Criterio invalido");
-        return 1;
-    }
-
-
-}
