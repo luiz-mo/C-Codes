@@ -36,8 +36,7 @@ int gbv_open(Library *lib, const char *filename){
     if(!(f = fopen(filename, "rb")))
         return 1;
 
-    fread(&sb.num_docs,sizeof(int),1,f);
-    fread(&sb.offset,sizeof(long),1,f);
+    fread(&sb,sizeof(struct superBloco),1,f);
 
     lib->count = sb.num_docs;
 
@@ -71,7 +70,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     if(!(gbv = fopen(archive,"rb+")))
         return 1;
 
-    /*cria o documento a ser inserido*/
+    /*abre o documento a ser inserido*/
     if(!(doc = fopen(docname, "rb"))){
         fclose(gbv);
 
@@ -119,8 +118,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
 
     /*volta para o inicio e atualiza o superbloco*/
     fseek(gbv,0,SEEK_SET);
-    fwrite(&sb.num_docs,sizeof(int),1,gbv);
-    fwrite(&sb.offset,sizeof(long),1,gbv);
+    fwrite(&sb,sizeof(struct superBloco),1,gbv);
 
     fclose(gbv);
     fclose(doc);
@@ -128,15 +126,51 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     return 0;
 }
 
-int gbv_remove(Library *lib, const char *docname){
+int gbv_remove(Library *lib, const char *archive, const char *docname){
+    FILE *gbv;
+    struct superBloco sb;
+    int i;
 
+    i = 0;
+
+    /*procura o documento a ser removido*/
+    while(i < lib->count && strcmp(docname,lib->docs[i].name) != 0)
+        i++;
+
+    /*caso elemento nao seja encontrado*/
+    if(i == lib->count)
+        return 1;
+
+    for(;i < lib->count-1;i++)
+        lib->docs[i] = lib->docs[i+1];
+
+    lib->count--;
+
+    if(!(gbv = fopen(archive, "rb+")))
+        return 1;
+
+    if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
+        fclose(gbv);
+        return -1;
+    }
+
+    /*atualiza a area de diretorio*/
+    fseek(gbv,sb.offset,SEEK_SET);
+    fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+    /*atualiza o superbloco*/
+    fseek(gbv,0,SEEK_SET);
+    sb.num_docs = lib->count;
+    fwrite(&sb.num_docs,sizeof(int),1,gbv);
+
+    return 0;
 }   
 
 int gbv_list(const Library *lib){
     int i;
-    
-    printf("Biblioteca vazia\n");
+
     if(lib->count == 0){
+        printf("Biblioteca vazia\n");
         return 0;
     }
 
@@ -148,14 +182,37 @@ int gbv_list(const Library *lib){
 
         printf("Nome: %s\n", d.name);
         printf("Tamanho: %ld bytes\n", d.size);
-        printf("Data de inserção: %s", date);
-        printf("Offest: %d", d.offset);
+        printf("Data de inserção: %s\n", date);
+        printf("Offset: %ld\n\n", d.offset);
     }
 
     return 0;
 }
 
-int gbv_view(const Library *lib, const char *docname){
+int gbv_view(const Library *lib, const char *archive, const char *docname){
+    FILE *gbv;
+    char buffer[BUFFER_SIZE];
+    struct superBloco sb;
+    int i = 0;
+    long offset;
 
+
+    gbv = fopen(archive, "rb");
+
+    /*vai para a area de diretorio*/
+    fread(&sb,sizeof(struct superBloco),1,gbv);
+    fseek(gbv,sb.offset,SEEK_SET);
+
+    /*procura o documento*/
+    while(i < lib->count && strcmp(docname,lib->docs[i].name) != 0)
+        i++;
+
+    offset = lib->docs[i].offset;
+    fseek(gbv,offset,SEEK_SET);
+
+    for(i=0;i < 5; i++){
+        fread(buffer,1,BUFFER_SIZE,gbv);
+        printf("%s", buffer);
+    }
 }
 
