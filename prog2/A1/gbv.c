@@ -88,7 +88,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     /*procura a posicao de escrever o novo documento*/
     fseek(gbv,sb.offset,SEEK_SET);
     
-    strncpy(new_doc.name,docname,MAX_NAME);
+    strncpy(new_doc.name,docname,MAX_NAME-1);
+    new_doc.name[MAX_NAME-1] = '\0'; /*strncpy pode nao terminar com \0*/
     new_doc.offset = ftell(gbv);
 
     /*itera enquanto ainda houverem bytes nao lidos*/
@@ -189,30 +190,119 @@ int gbv_list(const Library *lib){
     return 0;
 }
 
+/*printa o bloco e retorna o total de bytes escritos */
+size_t print_bloco(FILE *gbv, size_t *remaining){
+    size_t size_read, size_wr = 0;
+    char buffer[BUFFER_SIZE];
+    int i = 0;
+
+    while(*remaining > 0 && i <= BLOCK_SIZE){
+        if(*remaining > BUFFER_SIZE)
+            size_read = BUFFER_SIZE;
+        else
+            size_read = *remaining;
+
+        fread(buffer,1,size_read,gbv);
+        fwrite(buffer,1,size_read,stdout);
+        printf("\n");
+
+        *remaining -= size_read;
+        size_wr += size_read;
+        i++;
+    }
+
+    return size_wr;
+}
+
 int gbv_view(const Library *lib, const char *archive, const char *docname){
     FILE *gbv;
-    char buffer[BUFFER_SIZE];
+    Document doc;
+    char op = 'n';
     struct superBloco sb;
     int i = 0;
-    long offset;
+    size_t remaining, total_blocks, block_bytes;
 
+    block_bytes = BUFFER_SIZE * BLOCK_SIZE;
 
-    gbv = fopen(archive, "rb");
+    if(!(gbv = fopen(archive, "rb")))
+        return -1;
 
     /*vai para a area de diretorio*/
-    fread(&sb,sizeof(struct superBloco),1,gbv);
+    if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
+        fclose(gbv);
+        return -1;
+    }
+
     fseek(gbv,sb.offset,SEEK_SET);
 
-    /*procura o documento*/
     while(i < lib->count && strcmp(docname,lib->docs[i].name) != 0)
         i++;
+        
+    /*procura o documento*/
+    if(i == lib->count){
+        fclose(gbv);
 
-    offset = lib->docs[i].offset;
-    fseek(gbv,offset,SEEK_SET);
-
-    for(i=0;i < 5; i++){
-        fread(buffer,1,BUFFER_SIZE,gbv);
-        printf("%s", buffer);
+        return 1;
     }
+
+    doc = lib->docs[i];
+    
+    total_blocks = (doc.size + block_bytes -1) / block_bytes; /*isso calcula o teto*/
+    fseek(gbv,doc.offset,SEEK_SET);
+
+    i = 0;
+    do{
+        switch(op){
+            case('n'):
+                if(i >= total_blocks){
+                    printf("Documento chegou ao fim\n");
+                    break;
+                }
+
+                fseek(gbv,doc.offset + (i * block_bytes),SEEK_SET);
+                if(i * block_bytes >= doc.size)
+                    remaining = 0;
+                else
+                    remaining = doc.size - (i * block_bytes);
+
+                print_bloco(gbv,&remaining);
+
+                i++;
+                break;
+    
+            case('p'):
+                if(i <= 1){
+                    printf("Ja esta no primeiro bloco\n");
+                    break;
+                }
+
+                i -= 2;
+
+                fseek(gbv,doc.offset + (i * block_bytes),SEEK_SET);
+
+                if(i * block_bytes >= doc.size)
+                    remaining = 0;
+                else
+                    remaining = doc.size - (i * block_bytes);
+
+                print_bloco(gbv,&remaining);
+                
+                i++;
+                break;
+
+            default:
+                printf("operacao invalida");
+        }
+
+        printf("--------------------------------------\n");
+        printf("n -> proximo bloco\n");
+        printf("p -> bloco anterior\n");
+        printf("q -> sair da visualizacao\n");
+        scanf(" %c", &op);
+        printf("--------------------------------------\n");
+    } while(op != 'q');
+    fclose(gbv);
+    
+    return 0;
 }
 

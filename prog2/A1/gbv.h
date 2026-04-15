@@ -5,6 +5,7 @@
 
 #define MAX_NAME 256
 #define BUFFER_SIZE 512   // tamanho fixo do buffer em bytes
+#define BLOCK_SIZE 7
 
 // Estrutura de metadados de cada documento
 typedef struct {

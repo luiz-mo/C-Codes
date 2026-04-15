@@ -1,0 +1,86 @@
+Precisamos agregar valor
+	-Confiança
+	-Clareza
+	-Solução
+	-Economia de trabalho
+	-Previsibilidade
+
+Mensagens de Follow-Up
+Primeiro Contato
+Cadência: 2, 4, 6, 14 dias.
+Após 2 dias
+Oi, [nome da lead], tudo bem? Comentei com você sobre marcarmos uma conversa. Seria mais para entender a sua necessidade e avaliar se a Ecomp pode ajudar, podemos marcar para [data]?
+
+Oi, [nome da lead], tudo certo? Passando para falar um pouco do projeto. O briefing é algo bem objetivo e necessário para entendermos o geral do projeto e suas necessidades. Seria possível marcarmos para [data]?
+
+Após 4 dias
+
+Oi, [nome da lead], tudo bem? Já comentei um pouco com você sobre [assunto do primeiro contato]. Desde então pesquisei sobre e encontrei [algo que agregue valor]. Como vocês trabalham com [o que a lead faz], acredito que seja uma solução muito viável para vocês. Quer que eu te envie [esse material/solução]? Qualquer coisa, estou por aqui.
+
+Em destaque: essa é a parte mais importante, na qual temos que agregar valor ao nosso produto de alguma maneira. Exemplo: uma sugestão de solução, uma referência, um insight, etc.
+
+Em destaque: Call to action - incentivar o cliente a realizar a ação necessária, seja continuar a conversa para entender melhor, seja marcar uma reunião.
+
+Oi, [nome da lead], tudo certo? Imagino que você deve estar bem atarefado nos últimos dias. Se quiser, posso mandar um áudio, ou preparar um texto para explicar melhor o motivo de nos reunirmos, assim você decide se marcamos a reunião ou não. Desse jeito é melhor?
+
+
+
+Após 6 dias
+
+Oi [nome da lead], tudo bem? Caso realmente não seja possível marcarmos uma reunião, podemos resolver por mensagem mesmo, para facilitar para você. Prefere assim, ou acha possível de nos reunirmos ainda?
+
+Oi [nome da lead], tudo bem? No nosso briefing trataríamos de objetivos, funcionalidades, o escopo geral do projeto e os próximos passos. Caso necessário, podemos alinhar alguns assuntos por mensagem ou até mesmo conversar sobre tudo que citei sem necessidade de uma reunião. Me diga como prefere e damos seguimento.
+
+Após 14 dias
+
+Oi, [nome da lead], tudo bem? Estou aqui para uma última tentativa de contato. Caso esteja interessado, ainda podemos alinhar nossos objetivos, preciso apenas que me diga quando há disponibilidade. Caso contrário, agradeço pelo contato e fico à disposição para trabalharmos juntos no futuro. Obrigado.
+
+Pós-Briefing
+Cadência: 0 (logo após o briefing), 2, 5, 10 dias.
+
+Logo após o briefing
+
+Oi, [nome da lead], tudo bem? Agradeço pela reunião que fizemos hoje. Vou mandar um resumo rápido sobre o que conversamos: [resumo]. Com a sua aprovação, preparo a proposta até [data]. Estou disponível para fazer qualquer ajuste que queira nos requisitos.
+
+Após 2 dias
+
+Oi, [nome da lead], tudo bem? Gostaria de saber se está tudo certo no resumo do briefing, se tiver algo a acrescentar, posso ajustar sem problema. Com a sua validação, preparo a proposta no prazo combinado.
+
+Após 5 dias
+
+Oi, [nome da lead], tudo bem? Caso você não consiga olhar o resumo, posso fazer a proposta mesmo assim utilizando aquilo que já conversamos e depois podemos ajustar tudo com mais calma. Prefere que façamos assim?
+
+Após 10 dias
+
+Oi, [nome da lead], tudo bem? Passando para uma tentativa de contato. Caso ainda queira avançar na proposta, pode me avisar que já tenho tudo preparado aqui. Obrigado pelo tempo.
+
+Após envio/apresentação da proposta
+Cadência: 2, 5, 10 dias.
+
+Após 2 dias
+
+Oi, [nome da lead], tudo bem? Queria apenas reforçar um ponto da proposta. Ela foi feita com o objetivo de resolver [dor do cliente] e facilitar [algo]. Se quiser posso te explicar melhor algum ponto da proposta que pode ter ficado confuso. 
+
+Após 5 dias
+
+Oi, [nome da lead], tudo bem? Caso o escopo ou o preço não estejam alinhados com o que você esperava, podemos fazer algumas mudanças ou deixar a proposta um pouco mais enxuta, o que acha disso? Se aceitar, posso fazer alguns ajustes mínimos na proposta e te enviar até [data].
+
+Após 10 dias
+
+Oi, [nome da lead], tudo bem? Venho para encerrar o acompanhamento da proposta. Fico a disposição para caso queira continuar ou fazer ajustes na proposta. Obrigado pelo tempo.
+
+
+
+
+
+
+
+
+
+
+
+
+Fluxograma
+É assim?
+
+
