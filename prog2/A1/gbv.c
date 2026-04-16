@@ -6,8 +6,8 @@
 #include "gbv.h"
 
 struct superBloco{
-    int num_docs;
     long offset;
+    int num_docs;
 };
 
 int gbv_create(const char *filename){
@@ -55,6 +55,8 @@ int gbv_open(Library *lib, const char *filename){
     
         if(fread(lib->docs,sizeof(Document),sb.num_docs,f) != sb.num_docs){
             fclose(f);
+            free(lib->docs);
+            lib->docs = NULL;
 
             return 1;
         }
@@ -74,6 +76,9 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     char buffer[BUFFER_SIZE];
     Document new_doc, *tmp;
     long doc_size = 0;
+
+    if((strlen(docname)) >= MAX_NAME)
+        return -1;
 
     /*abre a biblioteca*/
     if(!(gbv = fopen(archive,"rb+")))
@@ -140,6 +145,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
 
 int gbv_remove(Library *lib, const char *archive, const char *docname){
     FILE *gbv;
+    Document *temp;
     struct superBloco sb;
     int i;
 
@@ -157,6 +163,11 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
         lib->docs[i] = lib->docs[i+1];
 
     lib->count--;
+
+    temp = realloc(lib->docs,lib->count * sizeof(Document));
+
+    if(temp || lib->count == 0)
+        lib->docs = temp;
 
     if(!(gbv = fopen(archive, "rb+")))
         return 1;
@@ -204,7 +215,7 @@ int gbv_list(const Library *lib){
 }
 
 void print_bloco(FILE *gbv, size_t *remaining){
-    size_t size_read, size_wr = 0;
+    size_t size_read,lido;
     char buffer[BUFFER_SIZE];
     int i = 0;
 
@@ -214,12 +225,15 @@ void print_bloco(FILE *gbv, size_t *remaining){
         else
             size_read = *remaining;
 
-        fread(buffer,1,size_read,gbv);
-        fwrite(buffer,1,size_read,stdout);
+        lido = fread(buffer,1,size_read,gbv);
+        
+        if(lido == 0)
+            break;
+
+        fwrite(buffer,1,lido,stdout);
         printf("\n");
 
-        *remaining -= size_read;
-        size_wr += size_read;
+        *remaining -= lido;
         i++;
     }
 }
@@ -258,7 +272,6 @@ int gbv_view(const Library *lib, const char *archive, const char *docname){
     doc = lib->docs[i];
     
     total_blocks = (doc.size + block_bytes -1) / block_bytes; /*isso calcula o teto*/
-    fseek(gbv,doc.offset,SEEK_SET);
 
     i = 0;
     do{
@@ -301,7 +314,7 @@ int gbv_view(const Library *lib, const char *archive, const char *docname){
                 break;
 
             default:
-                printf("operacao invalida");
+                printf("Operacao invalida\n");
         }
 
         printf("--------------------------------------\n");

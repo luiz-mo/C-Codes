@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include "gbv.h"
 
 int main(int argc, char *argv[]) {
@@ -33,11 +35,13 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(opcao, "-a") == 0) {
         for (int i = 3; i < argc; i++) {
-            if(gbv_add(&lib, biblioteca, argv[i]) == 0)
+            ret = gbv_add(&lib,biblioteca,argv[i]);
+            if(ret == 0)
                 printf("Documento %s adicionado\n", argv[i]);
-            else{
+            else if(ret == -1)
+                printf("Erro ao adicionar documento %s: nome deve ter menos que 256 caracteres\n", argv[i]);
+            else
                 printf("Erro ao adicionar documento %s\n", argv[i]);
-            }
         }
     }
     else if (strcmp(opcao, "-r") == 0) {
@@ -65,7 +69,8 @@ int main(int argc, char *argv[]) {
     else {
         printf("Opção inválida.\n");
     }
-
+    free(lib.docs);
+    
     return 0;
 }
 
