@@ -13,9 +13,21 @@ int main(int argc, char *argv[]) {
     const char *opcao = argv[1];
     const char *biblioteca = argv[2];    
 
+    if (strcmp(opcao, "-c") == 0){
+        if(gbv_create(biblioteca) != 0){
+            printf("Erro ao criar biblioteca %s\n", biblioteca);
+
+            return 1;
+        }
+        printf("Biblioteca %s criada\n", biblioteca);
+
+        return 0;
+    }
+
     Library lib;
     if (gbv_open(&lib, biblioteca) != 0) {
-        gbv_create(biblioteca);
+        printf("Erro ao abrir biblioteca %s\n", biblioteca);
+
         return 1;
     }
 
@@ -23,8 +35,9 @@ int main(int argc, char *argv[]) {
         for (int i = 3; i < argc; i++) {
             if(gbv_add(&lib, biblioteca, argv[i]) == 0)
                 printf("Documento %s adicionado\n", argv[i]);
-            else
+            else{
                 printf("Erro ao adicionar documento %s\n", argv[i]);
+            }
         }
     }
     else if (strcmp(opcao, "-r") == 0) {
@@ -42,7 +55,12 @@ int main(int argc, char *argv[]) {
         gbv_list(&lib);
     }
     else if (strcmp(opcao, "-v") == 0 && argc >= 4) {
-        gbv_view(&lib, biblioteca, argv[3]);
+        ret = gbv_view(&lib, biblioteca, argv[3]);
+        if(ret == 1)
+            printf("Documento %s nao encontrado\n", argv[3]);
+        else if(ret == -1)
+            printf("Erro\n");
+        
     }
     else {
         printf("Opção inválida.\n");

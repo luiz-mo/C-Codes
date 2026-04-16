@@ -20,7 +20,7 @@ int gbv_create(const char *filename){
     }
 
     sb.num_docs = 0;
-    sb.offset = sizeof(int) + sizeof(long); /*tamanho do num_docs+offset em bytes*/
+    sb.offset = sizeof(struct superBloco);
 
     fwrite(&sb,sizeof(struct superBloco),1,f);
 
@@ -33,11 +33,15 @@ int gbv_open(Library *lib, const char *filename){
     struct superBloco sb;
     FILE *f;    
 
-    if(!(f = fopen(filename, "rb")))
+    if(!(f = fopen(filename, "rb"))){
         return 1;
+    }
 
-    fread(&sb,sizeof(struct superBloco),1,f);
+    if(fread(&sb,sizeof(struct superBloco),1,f) != 1){
+        fclose(f);
 
+        return 1;
+    }
     lib->count = sb.num_docs;
 
     fseek(f,sb.offset,SEEK_SET);
@@ -45,10 +49,15 @@ int gbv_open(Library *lib, const char *filename){
     if(sb.num_docs > 0){
         if(!(lib->docs = malloc(sb.num_docs * sizeof(Document)))){
             fclose(f);
+
             return 1;
         }   
     
-        fread(lib->docs,sizeof(Document),sb.num_docs,f);
+        if(fread(lib->docs,sizeof(Document),sb.num_docs,f) != sb.num_docs){
+            fclose(f);
+
+            return 1;
+        }
     }     
     else
         lib->docs = NULL;
@@ -63,7 +72,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     struct superBloco sb;
     FILE *gbv, *doc;
     char buffer[BUFFER_SIZE];
-    Document new_doc;
+    Document new_doc, *tmp;
     long doc_size = 0;
 
     /*abre a biblioteca*/
@@ -102,12 +111,14 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     new_doc.date = time(NULL);
 
     /*aloca memoria para adicionar mais um doc*/
-    if(!(lib->docs = realloc((lib->docs),(lib->count+1) * sizeof(Document)))){
+    if(!(tmp = realloc((lib->docs),(lib->count+1) * sizeof(Document)))){
         fclose(gbv);
         fclose(doc);
         
         return 1;
     }
+
+    lib->docs = tmp;
 
     lib->docs[lib->count] = new_doc;
     lib->count++;
@@ -162,7 +173,9 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     /*atualiza o superbloco*/
     fseek(gbv,0,SEEK_SET);
     sb.num_docs = lib->count;
-    fwrite(&sb.num_docs,sizeof(int),1,gbv);
+    fwrite(&sb,sizeof(struct superBloco),1,gbv);
+
+    fclose(gbv);
 
     return 0;
 }   
@@ -179,7 +192,7 @@ int gbv_list(const Library *lib){
         Document d = lib->docs[i];
         char date[32];
 
-        format_date(d.date,date,64);
+        format_date(d.date,date,32);
 
         printf("Nome: %s\n", d.name);
         printf("Tamanho: %ld bytes\n", d.size);
@@ -190,13 +203,12 @@ int gbv_list(const Library *lib){
     return 0;
 }
 
-/*printa o bloco e retorna o total de bytes escritos */
-size_t print_bloco(FILE *gbv, size_t *remaining){
+void print_bloco(FILE *gbv, size_t *remaining){
     size_t size_read, size_wr = 0;
     char buffer[BUFFER_SIZE];
     int i = 0;
 
-    while(*remaining > 0 && i <= BLOCK_SIZE){
+    while(*remaining > 0 && i < BLOCK_SIZE){
         if(*remaining > BUFFER_SIZE)
             size_read = BUFFER_SIZE;
         else
@@ -210,8 +222,6 @@ size_t print_bloco(FILE *gbv, size_t *remaining){
         size_wr += size_read;
         i++;
     }
-
-    return size_wr;
 }
 
 int gbv_view(const Library *lib, const char *archive, const char *docname){
