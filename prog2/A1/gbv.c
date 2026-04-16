@@ -76,9 +76,17 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     char buffer[BUFFER_SIZE];
     Document new_doc, *tmp;
     long doc_size = 0;
+    int i;
+
+    if((strcmp(archive, docname)) == 0)
+        return 1;
+
+    for(i=0;i < lib->count;i++)
+        if(strcmp(lib->docs[i].name,docname) == 0)
+            return 1;
 
     if((strlen(docname)) >= MAX_NAME)
-        return -1;
+        return 1;
 
     /*abre a biblioteca*/
     if(!(gbv = fopen(archive,"rb+")))
@@ -196,7 +204,6 @@ int gbv_list(const Library *lib){
 
     if(lib->count == 0){
         printf("Biblioteca vazia\n");
-        return 0;
     }
 
     for(i=0; i<lib->count; i++){
@@ -215,7 +222,7 @@ int gbv_list(const Library *lib){
 }
 
 void print_bloco(FILE *gbv, size_t *remaining){
-    size_t size_read,lido;
+    size_t size_read,read;
     char buffer[BUFFER_SIZE];
     int i = 0;
 
@@ -225,15 +232,15 @@ void print_bloco(FILE *gbv, size_t *remaining){
         else
             size_read = *remaining;
 
-        lido = fread(buffer,1,size_read,gbv);
+        read = fread(buffer,1,size_read,gbv);
         
-        if(lido == 0)
+        if(read == 0)
             break;
 
-        fwrite(buffer,1,lido,stdout);
+        fwrite(buffer,1,read,stdout);
         printf("\n");
 
-        *remaining -= lido;
+        *remaining -= read;
         i++;
     }
 }

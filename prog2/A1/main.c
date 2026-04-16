@@ -35,11 +35,8 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(opcao, "-a") == 0) {
         for (int i = 3; i < argc; i++) {
-            ret = gbv_add(&lib,biblioteca,argv[i]);
-            if(ret == 0)
+            if(gbv_add(&lib,biblioteca,argv[i]) == 0)
                 printf("Documento %s adicionado\n", argv[i]);
-            else if(ret == -1)
-                printf("Erro ao adicionar documento %s: nome deve ter menos que 256 caracteres\n", argv[i]);
             else
                 printf("Erro ao adicionar documento %s\n", argv[i]);
         }
