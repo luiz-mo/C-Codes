@@ -6,15 +6,15 @@ Luiz Guilherme de Souza Mo GRR 20252981
 ## Lista de Arquivos
 Mantive a estrutura padrao de arquivos, adicionando apenas o diretorio src contendo arquivos para teste
 
-### src
-#### Arquivos de teste
+- src
+  - Arquivos de teste
 
-### main.c
-### gbv.c
-### gbv.h
-### util.c
-### util.h
-### Makefile
+- main.c
+- gbv.c
+- gbv.h
+- util.c
+- util.h
+- Makefile
 
 ## Dificuldades enfrentadas + bugs conhecidos
 No início, posso dizer que minha maior dificuldade foi utilizar as funções de manipulação de arquivos binários, visto que não pude comparecer à aula desse dia. No entanto, é realmente fácil encontrar a documentação dessas funções e com o tempo consegui me acostumar com seu uso. No início também levei um tempo para me lembrar como usar as funções da biblioteca string.h, mas isso não foi um problema posteriormente. 
