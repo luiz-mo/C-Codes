@@ -83,8 +83,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
 
     for(i=0;i < lib->count;i++)
         if(strcmp(lib->docs[i].name,docname) == 0)
-            return 1;
-
+            gbv_remove(lib,archive,docname);
+            
     if((strlen(docname)) >= MAX_NAME)
         return 1;
 
