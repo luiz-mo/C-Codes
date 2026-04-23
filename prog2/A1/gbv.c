@@ -69,6 +69,17 @@ int gbv_open(Library *lib, const char *filename){
     return 0;
 }
 
+int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gbv, FILE *doc, struct superBloco sb, int i){
+    
+    Document old_doc = lib->docs[i];
+    
+    gbv_remove(lib,archive,docname);
+
+    if(!(doc = fopen(docname, "rb"))){
+        return 1;
+    }
+}
+
 int gbv_add(Library *lib, const char *archive, const char *docname){
     size_t data_read;
     struct superBloco sb;
@@ -80,10 +91,6 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
 
     if((strcmp(archive, docname)) == 0)
         return 1;
-
-    for(i=0;i < lib->count;i++)
-        if(strcmp(lib->docs[i].name,docname) == 0)
-            gbv_remove(lib,archive,docname);
             
     if((strlen(docname)) >= MAX_NAME)
         return 1;
@@ -107,6 +114,10 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
         return 1;
     }
 
+    for(i=0;i < lib->count;i++)
+        if(strcmp(lib->docs[i].name,docname) == 0)
+            gbv_replace(lib,archive,docname,gbv,doc,sb,i);
+
     /*procura a posicao de escrever o novo documento*/
     fseek(gbv,sb.offset,SEEK_SET);
     
@@ -118,7 +129,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     while((data_read = fread(buffer,1,BUFFER_SIZE,doc)) > 0){
         fwrite(buffer,1,data_read,gbv); /*escreve na biblioteca o que esta no buffer*/
         doc_size += data_read;
-    } 
+    }
 
     new_doc.size = doc_size;
     new_doc.date = time(NULL);
