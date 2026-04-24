@@ -182,10 +182,8 @@ int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gb
 }
 
 int gbv_add(Library *lib, const char *archive, const char *docname){
-    size_t data_read;
     struct superBloco sb;
     FILE *gbv, *doc;
-    char buffer[BUFFER_SIZE];
     Document new_doc, *tmp;
     long doc_size = 0;
     int i;
