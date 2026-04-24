@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "util.h"
 #include "gbv.h"
@@ -11,7 +12,7 @@ struct superBloco{
 };
 
 /*escreve doc em gbv a partir da posicao atual e retorna a quantidade de bytes escritos*/
-int write_doc(FILE *gbv, FILE *doc){
+long write_doc(FILE *gbv, FILE *doc){
     char buffer[BUFFER_SIZE];
     long read, doc_size = 0;
 
@@ -103,6 +104,14 @@ int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gb
         fseek(gbv,old_doc.offset,SEEK_SET);
         write_doc(gbv,doc);
 
+        lib->docs[i].date = time(NULL);
+        
+        fseek(gbv,sb.offset,SEEK_SET);
+        fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+        fclose(doc);
+        fclose(gbv);
+
         return 0;
     }
 
@@ -111,7 +120,7 @@ int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gb
         long pos = end;
 
         while(pos > start){
-            if(end - pos > BUFFER_SIZE)
+            if(pos - start > BUFFER_SIZE)
                 size_read = BUFFER_SIZE;
             else
                 size_read = pos - start;
@@ -130,7 +139,7 @@ int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gb
         long pos = start;
 
         while(pos < end){
-            if(pos - start > BUFFER_SIZE)
+            if(end - pos > BUFFER_SIZE)
                 size_read = BUFFER_SIZE;
             else
                 size_read = end - pos;
@@ -149,6 +158,7 @@ int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gb
     write_doc(gbv,doc);
 
     lib->docs[i].size = doc_size;
+    lib->docs[i].date = time(NULL);
 
     for(j = i+1;j < lib->count;j++){
         lib->docs[j].offset += diff;
@@ -161,6 +171,9 @@ int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gb
 
     fseek(gbv,0,SEEK_SET);
     fwrite(&sb,sizeof(struct superBloco),1,gbv);
+
+    if(diff < 0)
+        ftruncate(fileno(gbv),sb.offset + lib->count * sizeof(Document));
 
     fclose(gbv);
     fclose(doc);
@@ -197,9 +210,9 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     /*le superbloco*/
     if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
         fclose(gbv);
-        fclose(doc);
-
+        
         return 1;
+        fclose(doc);
     }
 
     for(i=0;i < lib->count;i++)
@@ -214,10 +227,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
     new_doc.offset = ftell(gbv);
 
     /*itera enquanto ainda houverem bytes nao lidos*/
-    while((data_read = fread(buffer,1,BUFFER_SIZE,doc)) > 0){
-        fwrite(buffer,1,data_read,gbv); /*escreve na biblioteca o que esta no buffer*/
-        doc_size += data_read;
-    }
+    doc_size = write_doc(gbv,doc);
 
     new_doc.size = doc_size;
     new_doc.date = time(NULL);
@@ -296,6 +306,8 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
     sb.num_docs = lib->count;
     fwrite(&sb,sizeof(struct superBloco),1,gbv);
 
+    ftruncate(fileno(gbv),sb.offset + lib->count * sizeof(Document));
+
     fclose(gbv);
 
     return 0;
@@ -306,6 +318,8 @@ int gbv_list(const Library *lib){
 
     if(lib->count == 0){
         printf("Biblioteca vazia\n");
+        
+        return 0;
     }
 
     for(i=0; i<lib->count; i++){
