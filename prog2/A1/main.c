@@ -15,7 +15,16 @@ int main(int argc, char *argv[]) {
     const char *opcao = argv[1];
     const char *biblioteca = argv[2];    
 
+    Library lib;
+
     if (strcmp(opcao, "-c") == 0){
+        if(gbv_open(&lib, biblioteca) == 0){
+            printf("Biblioteca %s ja existe\n", biblioteca);
+            free(lib.docs);
+
+            return 1;
+        }
+
         if(gbv_create(biblioteca) != 0){
             printf("Erro ao criar biblioteca %s\n", biblioteca);
 
@@ -26,7 +35,6 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    Library lib;
     if (gbv_open(&lib, biblioteca) != 0) {
         printf("Erro ao abrir biblioteca %s\n", biblioteca);
 

@@ -10,15 +10,27 @@ struct superBloco{
     int num_docs;
 };
 
+/*escreve doc em gbv a partir da posicao atual e retorna a quantidade de bytes escritos*/
+int write_doc(FILE *gbv, FILE *doc){
+    char buffer[BUFFER_SIZE];
+    long read, doc_size = 0;
+
+    while((read = fread(buffer,1,BUFFER_SIZE,doc)) > 0){
+        fwrite(buffer,1,read,gbv);
+        doc_size += read;
+    }
+
+    return doc_size;
+}
+
 int gbv_create(const char *filename){
     struct superBloco sb;
     FILE *f;
 
-    if(!(f = fopen(filename, "wb"))){
-        perror("erro ao criar arquivo");
+    if(!(f = fopen(filename, "wb")))
         return 1;
-    }
-
+    
+    memset(&sb, 0, sizeof(struct superBloco));
     sb.num_docs = 0;
     sb.offset = sizeof(struct superBloco);
 
@@ -39,9 +51,9 @@ int gbv_open(Library *lib, const char *filename){
 
     if(fread(&sb,sizeof(struct superBloco),1,f) != 1){
         fclose(f);
-
         return 1;
     }
+    
     lib->count = sb.num_docs;
 
     fseek(f,sb.offset,SEEK_SET);
@@ -70,14 +82,90 @@ int gbv_open(Library *lib, const char *filename){
 }
 
 int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gbv, FILE *doc, struct superBloco sb, int i){
-    
-    Document old_doc = lib->docs[i];
-    
-    gbv_remove(lib,archive,docname);
+    long doc_size, diff, start, end, size_read, read; 
+    char buffer[BUFFER_SIZE];
+    int j;
 
-    if(!(doc = fopen(docname, "rb"))){
-        return 1;
+    Document old_doc = lib->docs[i];
+
+    fseek(doc,0,SEEK_END);
+    doc_size = ftell(doc);
+
+    diff = doc_size - old_doc.size;
+
+    start = old_doc.offset + old_doc.size; 
+    end = sb.offset;
+
+    fseek(doc,0,SEEK_SET);
+
+    /*se for de tamanho igual, so faz o add normal*/
+    if(diff == 0){
+        fseek(gbv,old_doc.offset,SEEK_SET);
+        write_doc(gbv,doc);
+
+        return 0;
     }
+
+    /*se o novo for maior, shifta os dados posteriores para frente*/
+    else if(diff > 0){
+        long pos = end;
+
+        while(pos > start){
+            if(end - pos > BUFFER_SIZE)
+                size_read = BUFFER_SIZE;
+            else
+                size_read = pos - start;
+            pos -= size_read;
+
+            fseek(gbv, pos, SEEK_SET);
+            read = fread(buffer, 1, size_read, gbv);
+
+            fseek(gbv, pos + diff, SEEK_SET);
+            fwrite(buffer, 1, read, gbv);
+        }
+    }
+
+    /*se nao, shifta para tras*/
+    else{
+        long pos = start;
+
+        while(pos < end){
+            if(pos - start > BUFFER_SIZE)
+                size_read = BUFFER_SIZE;
+            else
+                size_read = end - pos;
+
+            fseek(gbv, pos, SEEK_SET);
+            read = fread(buffer, 1, size_read, gbv);
+
+            fseek(gbv, pos + diff, SEEK_SET);
+            fwrite(buffer, 1, read, gbv);
+
+            pos += size_read;
+        }
+    }
+
+    fseek(gbv,old_doc.offset,SEEK_SET);
+    write_doc(gbv,doc);
+
+    lib->docs[i].size = doc_size;
+
+    for(j = i+1;j < lib->count;j++){
+        lib->docs[j].offset += diff;
+    }
+
+    sb.offset += diff;
+    
+    fseek(gbv,sb.offset,SEEK_SET);
+    fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+    fseek(gbv,0,SEEK_SET);
+    fwrite(&sb,sizeof(struct superBloco),1,gbv);
+
+    fclose(gbv);
+    fclose(doc);
+
+    return 0;
 }
 
 int gbv_add(Library *lib, const char *archive, const char *docname){
@@ -116,7 +204,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname){
 
     for(i=0;i < lib->count;i++)
         if(strcmp(lib->docs[i].name,docname) == 0)
-            gbv_replace(lib,archive,docname,gbv,doc,sb,i);
+           return gbv_replace(lib,archive,docname,gbv,doc,sb,i);
 
     /*procura a posicao de escrever o novo documento*/
     fseek(gbv,sb.offset,SEEK_SET);
@@ -183,10 +271,13 @@ int gbv_remove(Library *lib, const char *archive, const char *docname){
 
     lib->count--;
 
-    temp = realloc(lib->docs,lib->count * sizeof(Document));
-
-    if(temp || lib->count == 0)
-        lib->docs = temp;
+    if(lib->count > 0){
+        temp = realloc(lib->docs,lib->count * sizeof(Document));
+        if(temp)
+            lib->docs = temp;
+        else
+            return 1;
+    }
 
     if(!(gbv = fopen(archive, "rb+")))
         return 1;
