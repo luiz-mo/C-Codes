@@ -1,0 +1,515 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "util.h"
+#include "gbv.h"
+
+struct superBloco{
+    int num_docs;
+    long offset;
+};
+
+int check_key(FILE *f, const char *key){
+    char *lib_key;
+
+    if(fread(&lib_key,4,1,SEEK_SET) != 1){
+        return 0;
+    }
+
+    if(strcmp(lib_key,key) == 0)
+        return 0;
+
+    printf("Acesso Negado\n");
+    return 1;
+}
+
+/*escreve doc em gbv a partir da posicao atual e retorna a quantidade de bytes escritos*/
+long write_doc(FILE *gbv, FILE *doc){
+    char buffer[BUFFER_SIZE];
+    long read, doc_size = 0;
+
+    while((read = fread(buffer,1,BUFFER_SIZE,doc)) > 0){
+        fwrite(buffer,1,read,gbv);
+        doc_size += read;
+    }
+
+    return doc_size;
+}
+
+int gbv_create(const char *filename, const char *key){
+    struct superBloco sb;
+    FILE *f;
+
+    if(!(f = fopen(filename, "wb")))
+        return 1;
+    
+    memset(&sb, 0, sizeof(struct superBloco));
+    sb.num_docs = 0;
+    sb.offset = sizeof(struct superBloco) + 4; 
+
+    printf("%d %ld\n",sb.num_docs, sb.offset);
+
+    fwrite(key,4,1,f);
+
+    fwrite(&sb,sizeof(struct superBloco),1,f);
+
+    fclose(f);
+
+    return 0;
+}
+
+int gbv_open(Library *lib, const char *filename, const char *key){
+    FILE *gbv;
+    struct superBloco sb;   
+
+    if(!(gbv = fopen(filename, "rb"))){
+        return 1;
+    }
+
+    if(check_key(gbv,key) != 0){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    fseek(gbv,4,SEEK_SET);
+
+    if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
+        printf("%d %ld \n", sb.num_docs, sb.offset);
+        fclose(gbv);
+        return 1;
+    }
+
+    lib->count = sb.num_docs;
+
+    printf("%d %ld\n",sb.num_docs, sb.offset);
+
+    fseek(gbv,sb.offset,SEEK_SET);
+
+    if(sb.num_docs > 0){
+        if(!(lib->docs = malloc(sb.num_docs * sizeof(Document)))){
+            fclose(gbv);
+            return 1;
+        }   
+    
+        if(fread(lib->docs,sizeof(Document),sb.num_docs,gbv) != sb.num_docs){
+            fclose(gbv);
+            free(lib->docs);
+            lib->docs = NULL;
+
+            return 1;
+        }
+    }     
+    else
+        lib->docs = NULL;
+
+    fclose(gbv);
+
+    return 0;
+}
+
+int gbv_replace(Library *lib, const char *archive, const char *docname, FILE *gbv, FILE *doc, struct superBloco sb, int i){
+    long doc_size, diff, start, end, size_read, read; 
+    char buffer[BUFFER_SIZE];
+    int j;
+
+    Document old_doc = lib->docs[i];
+
+    fseek(doc,0,SEEK_END);
+    doc_size = ftell(doc);
+
+    diff = doc_size - old_doc.size;
+
+    start = old_doc.offset + old_doc.size; 
+    end = sb.offset;
+
+    fseek(doc,0,SEEK_SET);
+
+    /*se for de tamanho igual, so faz o add normal*/
+    if(diff == 0){
+        fseek(gbv,old_doc.offset,SEEK_SET);
+        write_doc(gbv,doc);
+
+        lib->docs[i].date = time(NULL);
+        
+        fseek(gbv,sb.offset,SEEK_SET);
+        fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+        fclose(doc);
+        fclose(gbv);
+
+        return 0;
+    }
+
+    /*se o novo for maior, shifta os dados posteriores para frente*/
+    else if(diff > 0){
+        long pos = end;
+
+        while(pos > start){
+            if(pos - start > BUFFER_SIZE)
+                size_read = BUFFER_SIZE;
+            else
+                size_read = pos - start;
+            pos -= size_read;
+
+            fseek(gbv, pos, SEEK_SET);
+            read = fread(buffer, 1, size_read, gbv);
+
+            fseek(gbv, pos + diff, SEEK_SET);
+            fwrite(buffer, 1, read, gbv);
+        }
+    }
+
+    /*se nao, shifta para tras*/
+    else{
+        long pos = start;
+
+        while(pos < end){
+            if(end - pos > BUFFER_SIZE)
+                size_read = BUFFER_SIZE;
+            else
+                size_read = end - pos;
+
+            fseek(gbv, pos, SEEK_SET);
+            read = fread(buffer, 1, size_read, gbv);
+
+            fseek(gbv, pos + diff, SEEK_SET);
+            fwrite(buffer, 1, read, gbv);
+
+            pos += size_read;
+        }
+    }
+
+    fseek(gbv,old_doc.offset,SEEK_SET);
+    write_doc(gbv,doc);
+
+    lib->docs[i].size = doc_size;
+    lib->docs[i].date = time(NULL);
+
+    for(j = i+1;j < lib->count;j++){
+        lib->docs[j].offset += diff;
+    }
+
+    sb.offset += diff;
+    
+    fseek(gbv,sb.offset,SEEK_SET);
+    fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+    fseek(gbv,4,SEEK_SET);
+    fwrite(&sb,sizeof(struct superBloco),1,gbv);
+
+    if(diff < 0)
+        ftruncate(fileno(gbv),sb.offset + lib->count * sizeof(Document));
+
+    fclose(gbv);
+    fclose(doc);
+
+    return 0;
+}
+
+int gbv_add(Library *lib, const char *archive, const char *docname, const char *key){
+    struct superBloco sb;
+    FILE *gbv, *doc;
+    Document new_doc, *tmp;
+    long doc_size = 0;
+    int i;
+
+    /*abre a biblioteca*/
+    if(!(gbv = fopen(archive,"rb+")))
+        return 1;
+
+    if(check_key(gbv,key) != 0){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    if((strcmp(archive, docname)) == 0)
+        return 1;
+            
+    if((strlen(docname)) >= MAX_NAME)
+        return 1;
+
+    /*abre o documento a ser inserido*/
+    if(!(doc = fopen(docname, "rb"))){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    fseek(gbv,4,SEEK_SET);
+
+    /*le superbloco*/
+    if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
+        fclose(gbv);
+        
+        return 1;
+        fclose(doc);
+    }
+
+    for(i=0;i < lib->count;i++)
+        if(strcmp(lib->docs[i].name,docname) == 0)
+           return gbv_replace(lib,archive,docname,gbv,doc,sb,i);
+
+    /*procura a posicao de escrever o novo documento*/
+    fseek(gbv,sb.offset,SEEK_SET);
+    
+    strncpy(new_doc.name,docname,MAX_NAME-1);
+    new_doc.name[MAX_NAME-1] = '\0'; /*strncpy pode nao terminar com \0*/
+    new_doc.offset = ftell(gbv);
+
+    /*itera enquanto ainda houverem bytes nao lidos*/
+    doc_size = write_doc(gbv,doc);
+
+    new_doc.size = doc_size;
+    new_doc.date = time(NULL);
+
+    /*aloca memoria para adicionar mais um doc*/
+    if(!(tmp = realloc((lib->docs),(lib->count+1) * sizeof(Document)))){
+        fclose(gbv);
+        fclose(doc);
+        
+        return 1;
+    }
+
+    lib->docs = tmp;
+
+    lib->docs[lib->count] = new_doc;
+    lib->count++;
+    
+    sb.offset = ftell(gbv);
+    sb.num_docs = lib->count;
+
+    fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+    /*volta para o inicio e atualiza o superbloco*/
+    fseek(gbv,4,SEEK_SET);
+    fwrite(&sb,sizeof(struct superBloco),1,gbv);
+
+    fclose(gbv);
+    fclose(doc);
+
+    return 0;
+}
+
+int gbv_remove(Library *lib, const char *archive, const char *docname, const char *key){
+    FILE *gbv;
+    Document *temp;
+    struct superBloco sb;
+    int i;
+
+    i = 0;
+
+    if(!(gbv = fopen(archive, "rb+")))
+        return 1;
+
+    if(check_key(gbv,key) != 0){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    /*procura o documento a ser removido*/
+    while(i < lib->count && strcmp(docname,lib->docs[i].name) != 0)
+        i++;
+
+    /*caso elemento nao seja encontrado*/
+    if(i == lib->count)
+        return 1;
+
+    for(;i < lib->count-1;i++)
+        lib->docs[i] = lib->docs[i+1];
+
+    lib->count--;
+
+    if(lib->count > 0){
+        temp = realloc(lib->docs,lib->count * sizeof(Document));
+        if(temp)
+            lib->docs = temp;
+        else
+            return 1;
+    }
+
+    fseek(gbv,4,SEEK_SET);
+
+    if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
+        fclose(gbv);
+        return -1;
+    }
+
+    /*atualiza a area de diretorio*/
+    fseek(gbv,sb.offset,SEEK_SET);
+    fwrite(lib->docs,sizeof(Document),lib->count,gbv);
+
+    /*atualiza o superbloco*/
+    fseek(gbv,4,SEEK_SET);
+    sb.num_docs = lib->count;
+    fwrite(&sb,sizeof(struct superBloco),1,gbv);
+
+    ftruncate(fileno(gbv),sb.offset + lib->count * sizeof(Document));
+
+    fclose(gbv);
+
+    return 0;
+}   
+
+int gbv_list(const Library *lib, const char *archive, const char *key){
+    FILE *gbv;
+    int i;
+
+    if(!(gbv = fopen(archive,"rb")))
+        return 1;
+
+    if(check_key(gbv,key) != 0){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    if(lib->count == 0){
+        printf("Biblioteca vazia\n");
+        
+        fclose(gbv);
+        return 0;
+    }
+
+    for(i=0; i<lib->count; i++){
+        Document d = lib->docs[i];
+        char date[32];
+
+        format_date(d.date,date,32);
+
+        printf("Nome: %s\n", d.name);
+        printf("Tamanho: %ld bytes\n", d.size);
+        printf("Data de inserção: %s\n", date);
+        printf("Offset: %ld\n\n", d.offset);
+    }
+
+    fclose(gbv);
+    return 0;
+}
+
+void print_bloco(FILE *gbv, size_t *remaining){
+    size_t size_read,read;
+    char buffer[BUFFER_SIZE];
+    int i = 0;
+
+    while(*remaining > 0 && i < BLOCK_SIZE){
+        if(*remaining > BUFFER_SIZE)
+            size_read = BUFFER_SIZE;
+        else
+            size_read = *remaining;
+
+        read = fread(buffer,1,size_read,gbv);
+        
+        if(read == 0)
+            break;
+
+        fwrite(buffer,1,read,stdout);
+        printf("\n");
+
+        *remaining -= read;
+        i++;
+    }
+}
+
+int gbv_view(const Library *lib, const char *archive, const char *docname, const char *key){
+    FILE *gbv;
+    Document doc;
+    char op = 'n';
+    struct superBloco sb;
+    int i = 0;
+    size_t remaining, total_blocks, block_bytes;
+
+    block_bytes = BUFFER_SIZE * BLOCK_SIZE;
+
+    if(!(gbv = fopen(archive, "rb")))
+        return -1;
+
+    if(check_key(gbv,key) != 0){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    fseek(gbv,4,SEEK_SET);
+
+    if(fread(&sb,sizeof(struct superBloco),1,gbv) != 1){
+        fclose(gbv);
+        return -1;
+    }
+
+    fseek(gbv,sb.offset,SEEK_SET);
+
+    while(i < lib->count && strcmp(docname,lib->docs[i].name) != 0)
+        i++;
+        
+    /*procura o documento*/
+    if(i == lib->count){
+        fclose(gbv);
+
+        return 1;
+    }
+
+    doc = lib->docs[i];
+    
+    total_blocks = (doc.size + block_bytes -1) / block_bytes; /*isso calcula o teto*/
+
+    i = 0;
+    do{
+        switch(op){
+            case('n'):
+                if(i >= total_blocks){
+                    printf("Documento chegou ao fim\n");
+                    break;
+                }
+
+                fseek(gbv,doc.offset + (i * block_bytes),SEEK_SET);
+                if(i * block_bytes >= doc.size)
+                    remaining = 0;
+                else
+                    remaining = doc.size - (i * block_bytes);
+
+                print_bloco(gbv,&remaining);
+
+                i++;
+                break;
+    
+            case('p'):
+                if(i <= 1){
+                    printf("Ja esta no primeiro bloco\n");
+                    break;
+                }
+
+                i -= 2;
+
+                fseek(gbv,doc.offset + (i * block_bytes),SEEK_SET);
+
+                if(i * block_bytes >= doc.size)
+                    remaining = 0;
+                else
+                    remaining = doc.size - (i * block_bytes);
+
+                print_bloco(gbv,&remaining);
+                
+                i++;
+                break;
+
+            default:
+                printf("Operacao invalida\n");
+        }
+
+        printf("--------------------------------------\n");
+        printf("n -> proximo bloco\n");
+        printf("p -> bloco anterior\n");
+        printf("q -> sair da visualizacao\n");
+        scanf(" %c", &op);
+        printf("--------------------------------------\n");
+    } while(op != 'q');
+    fclose(gbv);
+    
+    return 0;
+}
+
