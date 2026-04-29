@@ -12,13 +12,16 @@ struct superBloco{
 };
 
 int check_key(FILE *f, const char *key){
-    char *lib_key;
+    char lib_key[5];
 
-    if(fread(&lib_key,4,1,SEEK_SET) != 1){
-        return 0;
-    }
+    fseek(f,0,SEEK_SET);
 
-    if(strcmp(lib_key,key) == 0)
+    if(fread(lib_key,1,4,f) != 4)
+        return 1;
+
+    lib_key[4] = '\0';
+
+    if(strncmp(lib_key,key,4) == 0)
         return 0;
 
     printf("Acesso Negado\n");
