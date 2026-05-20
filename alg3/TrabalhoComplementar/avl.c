@@ -2,12 +2,10 @@
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
-#define ALT(x) ((x) == NULL ? 0 : (x)->altura)
 
 typedef struct no {
     int chave;
     int fb;
-    int altura;
     struct no *pai;
     struct no *esq;
     struct no *dir;
@@ -135,16 +133,16 @@ no* avl_balance(no *x) {
     y = x;
 
     if(x->fb < -1)
-        if(x->esq->fb > 0)
+        if(x->esq->fb > 0) /*pesado para a direita*/
             y = rot_esqdir(x);
             
         else
-            y = rot_dir(x);
+            y = rot_dir(x); /*pesado para a esquerda*/
     else if(x->fb > 1)
         if(x->dir->fb < 0)
-            y = rot_diresq(x);
+            y = rot_diresq(x); /*pesado para a esquerda*/
         else
-            y = rot_esq(x);
+            y = rot_esq(x); /*pesado para a direita*/
     return y;
 }
 
@@ -167,20 +165,28 @@ void avl_insert(arvore *t, no *z) {
     no *x, *y;
 
     z->fb = 0;
-    x = tree_insert(t, z);
+    tree_insert(t, z);
+    x = z;
+
+    /*sobe balanceando*/
     while(x != NULL) {
         if(x->pai == NULL)
             break;
-
+        /*verifica se o no eh filho a esquerda ou a direita para atualizar fb*/
         if(x == x->pai->esq)
-            x->pai->fb--;
+            x->pai->fb--; /*se esta na esq, subarvore a esquerda aumentou*/
         else
-            x->pai->fb++;
+            x->pai->fb++; /*se esta na dir, subarvore a direita aumentou*/
 
-        y = avl_balance(x);
+        /*se fb == 0, altura da subarvore nao mudou*/
+        if(x->pai->fb == 0)
+            break;
 
-        if(y != x) {
-            troca_filho(t, x, y);
+        y = avl_balance(x->pai);
+
+        /*se houve rotacao, ja reequilibrou*/
+        if(y != x->pai) {
+            troca_filho(t, x->pai, y);
             break;
         }
         
@@ -192,12 +198,33 @@ void avl_delete(arvore *t, no *z) {
     no *x, *y, *p;
     
     x = tree_delete(t, z);
+
+    /*sobe balanceando*/
     while(x != NULL) {
-        y = avl_balance(x);
-        if(y != x) {
-            troca_filho(t, x, y);
-            x = y;
+        p = x->pai;
+
+        if(p == NULL)
+            break;
+
+        /*verifica se removeu da esquerda ou na direita*/
+        if(x == p->esq)
+            p->fb++;
+        else
+            p->fb--;
+
+        /*se altura da subarvore nao mudou, pode parar*/
+        if(p->fb == 1 || p->fb == -1)
+            break;
+
+        y = avl_balance(p);
+
+        if(y != p) {
+            troca_filho(t, p, y);
+
+            if(y->fb != 0)
+                break;
         }
-        x = x->pai;
-    }        
+
+        x = p;
+    }
 }
