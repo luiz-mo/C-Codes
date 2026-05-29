@@ -4,17 +4,14 @@
 #include <allegro5/allegro_image.h>
 #include <stdio.h>
 
+#include "init.h"
 #include "Screens.h"
 
 int main(){
     /*inicializacoes necessarias*/
-    al_init();
-    al_init_primitives_addon();
-    al_init_font_addon();
-    al_init_ttf_addon();
-    al_init_image_addon();
-    al_install_keyboard();
-    al_install_mouse();
+    init();
+
+    Player player = createPlayer();
 
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
@@ -41,40 +38,25 @@ int main(){
     //float frame = 0;
     //int pos_x = 0, pos_y = 0;
     //int current_frame_y = 161;
-
-    enum state{
-        HOME,
-        RUNNING,
-        PAUSED,
-        Z
-    };
-
-    enum state curr_state = HOME;
-    enum state prev_state = Z;
+    
+    int selected = 0;
+    state curr_state = HOME;
 
     while(1){
         al_wait_for_event(queue, &event);
 
-        if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+        if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || curr_state == EXIT)
             break;
         
         if(event.type == ALLEGRO_EVENT_KEY_DOWN)
-            if(curr_state == HOME)
-                curr_state = RUNNING;
+            handleInput(event, &selected, &curr_state);
 
         if(event.type == ALLEGRO_EVENT_TIMER){
-            if(curr_state == HOME){
-                if(curr_state != prev_state)
-                    drawHome(font, disp);
-                
-                prev_state = HOME;
-            }
+            if(curr_state == HOME)
+                drawHome(disp, font, selected);
 
             else if(curr_state == RUNNING){
-                if(curr_state != prev_state){
-                    al_draw_bitmap(bg, 0, 0, 0);
-                    al_flip_display();
-                }
+                drawGame(player, bg);
             }
         }
 
@@ -87,4 +69,6 @@ int main(){
 
     al_uninstall_keyboard();
     al_uninstall_mouse();
+
+    return 0;
 }

@@ -1,13 +1,11 @@
-#ifndef __PLAYER__
-#define __PLAYER__
+#include "Player.h"
 
-#include <allegro5/allegro5.h>
+Player createPlayer(){
+    Player p;
 
-typedef struct{
-    int pos_x;
-    int pos_y;
-    int hp;
-    ALLEGRO_BITMAP sprite;
-} Player;
+    p.hp = 100;
+    p.pos_x = 0;
+    p.pos_y = 30;
 
-#endif
+    return p;
+}
