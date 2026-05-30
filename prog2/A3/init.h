@@ -13,6 +13,15 @@ typedef enum{
     EXIT
 } state;
 
+typedef struct{
+    int left;
+    int right;
+    int jump;
+    int crouch;
+} Input;
+
 void init();
+
+Input createInput();
 
 #endif

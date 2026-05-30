@@ -12,6 +12,7 @@ int main(){
     init();
 
     Player player = createPlayer();
+    Input input = createInput();
 
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
@@ -48,14 +49,14 @@ int main(){
         if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || curr_state == EXIT)
             break;
         
-        if(event.type == ALLEGRO_EVENT_KEY_DOWN)
-            handleInput(event, &selected, &curr_state);
+        handleInput(event, &input, &selected, &curr_state);
 
         if(event.type == ALLEGRO_EVENT_TIMER){
             if(curr_state == HOME)
                 drawHome(disp, font, selected);
 
             else if(curr_state == RUNNING){
+                updatePlayer(&player, input, 1);
                 drawGame(player, bg);
             }
         }
