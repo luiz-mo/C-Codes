@@ -19,9 +19,24 @@ void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, int selected){
     al_flip_display();
 }
 
-void drawGame(Player p, ALLEGRO_BITMAP *bg){
-    /*desenha o jogador*/
+
+void drawPlatform(Platform plat){
+    al_draw_filled_rectangle(
+        plat.pos_x,
+        plat.pos_y, 
+        plat.pos_x + plat.width,
+        plat.pos_y + plat.height,
+        al_map_rgb(255, 255, 255)
+    );
+}
+
+void drawGame(Player p, Platform plat, ALLEGRO_BITMAP *bg){
     al_draw_bitmap(bg, 0, 0, 0);
+    
+    /*desenha plataformas*/
+    drawPlatform(plat);
+
+    /*desenha o jogador*/
     al_draw_rectangle(p.pos_x, p.pos_y, p.pos_x + 50, p.pos_y - 80, al_map_rgb(255, 0, 0), 5);
 
     /*desenha barra de vida*/

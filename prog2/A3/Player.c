@@ -13,12 +13,15 @@ Player createPlayer(){
 }
 
 void updatePlayer(Player *player, Input input, int hp){
-    player->hp -= hp;
+    player->hp = hp;
 
     if(input.left)
         player->pos_x -= 5;
 
     if(input.right)
         player->pos_x += 5;
+
+    if(input.jump)
+        player->pos_y -= 5;
 }
 

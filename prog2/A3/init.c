@@ -20,3 +20,14 @@ Input createInput(){
 
     return input;
 }
+
+Platform createPlatforms(){
+    Platform plat;
+
+    plat.pos_x = 0;
+    plat.pos_y = 650;
+    plat.width = 1280;
+    plat.height = 70;
+
+    return plat;
+}

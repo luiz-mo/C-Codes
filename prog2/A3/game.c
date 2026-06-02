@@ -13,6 +13,7 @@ int main(){
 
     Player player = createPlayer();
     Input input = createInput();
+    Platform plat = createPlatforms();
 
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
@@ -56,8 +57,8 @@ int main(){
                 drawHome(disp, font, selected);
 
             else if(curr_state == RUNNING){
-                updatePlayer(&player, input, 1);
-                drawGame(player, bg);
+                updatePlayer(&player, input, 100);
+                drawGame(player, plat, bg);
             }
         }
 

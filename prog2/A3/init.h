@@ -20,8 +20,17 @@ typedef struct{
     int crouch;
 } Input;
 
+typedef struct{
+    float pos_x;
+    float pos_y;
+    float width;
+    float height;
+} Platform;
+
 void init();
 
 Input createInput();
+
+Platform createPlatforms();
 
 #endif
