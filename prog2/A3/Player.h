@@ -9,6 +9,7 @@ typedef struct{
     int vx;
     int vy;
     int hp;
+    int onGround;
 } Player;
 
 Player createPlayer();

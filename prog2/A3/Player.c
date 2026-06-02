@@ -8,12 +8,20 @@ Player createPlayer(){
     p.pos_y = 600;
     p.vx = 0;
     p.vy = 0;
+    p.onGround = 1;
 
     return p;
 }
 
+int checkCollision(Player *player){
+    if(player->pos_y < 600)
+        return 1;
+}
+
 void updatePlayer(Player *player, Input input, int hp){
     player->hp = hp;
+
+    player->vy += GRAVITY;
 
     if(input.left)
         player->pos_x -= 5;
@@ -22,6 +30,10 @@ void updatePlayer(Player *player, Input input, int hp){
         player->pos_x += 5;
 
     if(input.jump)
-        player->pos_y -= 5;
+        player->vy -= 15;
+
+    
+
+    
 }
 
