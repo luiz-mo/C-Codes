@@ -21,13 +21,18 @@ Input createInput(){
     return input;
 }
 
-Platform createPlatforms(){
-    Platform plat;
+Map createMap(){
+    Map map;
 
-    plat.pos_x = 0;
-    plat.pos_y = 600;
-    plat.width = 1280;
-    plat.height = 70;
+    Platform ground = {0, 600, 1280, 70};
+    Platform plat1 = {300, 450, 200, 30};
+    Platform plat2 = {700, 350, 150, 30};
 
-    return plat;
+    map.plats[0] = ground;
+    map.plats[1] = plat1;
+    map.plats[2] = plat2;
+
+    map.n_plats = 3;
+    
+    return map;
 }

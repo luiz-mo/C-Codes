@@ -12,7 +12,8 @@ typedef enum{
     HOME,
     RUNNING,
     PAUSED,
-    EXIT
+    EXIT,
+    CONFIRM
 } state;
 
 typedef struct{
@@ -30,7 +31,7 @@ typedef struct{
 } Platform;
 
 typedef struct{
-    Platform *plats;
+    Platform plats[10];
     int n_plats;
 } Map;
 
@@ -38,6 +39,6 @@ void init();
 
 Input createInput();
 
-Platform createPlatforms();
+Map createMap();
 
 #endif

@@ -13,7 +13,7 @@ int main(){
 
     Player player = createPlayer();
     Input input = createInput();
-    Platform plat = createPlatforms();
+    Map map = createMap();
 
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
@@ -36,12 +36,9 @@ int main(){
     al_start_timer(timer);
  
     al_clear_to_color(al_map_rgb(255,255,255));
-
-    //float frame = 0;
-    //int pos_x = 0, pos_y = 0;
-    //int current_frame_y = 161;
     
     int selected = 0;
+    int bg_x = 0;
     state curr_state = HOME;
 
     while(1){
@@ -50,15 +47,29 @@ int main(){
         if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || curr_state == EXIT)
             break;
         
-        handleInput(event, &input, &selected, &curr_state);
+        handleInput(event, &input, &selected, &curr_state, disp, font);
 
         if(event.type == ALLEGRO_EVENT_TIMER){
-            if(curr_state == HOME)
+            if(curr_state == HOME){
                 drawHome(disp, font, selected);
+                al_flip_display();
+            }
 
             else if(curr_state == RUNNING){
-                updatePlayer(&player, input, 100);
-                drawGame(player, plat, bg);
+                updatePlayer(&player, input, map, 100);
+                
+                if(input.right)
+                    bg_x -= 2;
+                if(bg_x < -al_get_bitmap_width(bg))
+                    bg_x = 0;
+
+                drawGame(player, map, bg, bg_x);
+                al_flip_display();
+            }
+            else if(curr_state == PAUSED){
+                drawGame(player, map, bg, bg_x);
+                drawPausedScreen(disp, font);
+                al_flip_display();
             }
         }
 
