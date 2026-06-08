@@ -13,7 +13,8 @@ typedef enum{
     RUNNING,
     PAUSED,
     EXIT,
-    CONFIRM
+    CONFIRM,
+    GAME_OVER
 } state;
 
 typedef struct{
@@ -35,10 +36,17 @@ typedef struct{
     int n_plats;
 } Map;
 
-void init();
+typedef struct{
+    float x;
+    float y;
+} Camera;
+
+void initAddons();
 
 Input createInput();
 
 Map createMap();
+
+Camera createCamera();
 
 #endif

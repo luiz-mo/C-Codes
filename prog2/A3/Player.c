@@ -31,14 +31,12 @@ int checkCollision(Player *p, Map map){
     return -1;
 }
 
-void updatePlayer(Player *player, Input input, Map map, int hp){
-    player->hp = hp;
-
+void updatePlayer(Player *player, Input input, Map map){
     if(input.left)
-        player->pos_x -= 5;
+        player->vx = -10;
 
     if(input.right)
-        player->pos_x += 5;
+        player->vx = 10;
 
     if(input.jump && player->on_ground){
         player->vy = -15;
@@ -47,7 +45,15 @@ void updatePlayer(Player *player, Input input, Map map, int hp){
 
     player->vy += GRAVITY;
 
+    player->pos_x += player->vx;
     player->pos_y += player->vy;
+
+    player->vx = 0;
+
+    if(player->pos_y - player->height > map.plats[0].pos_y){
+        player->hp = 0;
+        return;
+    }
 
     int coll = checkCollision(player, map);
 
@@ -57,6 +63,5 @@ void updatePlayer(Player *player, Input input, Map map, int hp){
     player->pos_y = map.plats[coll].pos_y;
     player->vy = 0;
     player->on_ground = 1;
-          
 }
 

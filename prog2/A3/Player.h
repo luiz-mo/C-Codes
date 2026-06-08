@@ -16,6 +16,6 @@ typedef struct{
 
 Player createPlayer();
 
-void updatePlayer(Player *player, Input input, Map map, int hp);
+void updatePlayer(Player *player, Input input, Map map);
 
 #endif

@@ -7,13 +7,30 @@
 #include "init.h"
 #include "Screens.h"
 
+void resetGame(Player *player, Input *input, int *bg_x){
+    player->hp = 100;
+    player->pos_x = 30;
+    player->pos_y = 600;
+    player->vx = 0;
+    player->vy = 0;
+    player->on_ground = 1;
+
+    input->crouch = 0;
+    input->jump = 0;
+    input->right = 0;
+    input->left = 0;
+
+    *bg_x = 0;
+}
+
 int main(){
     /*inicializacoes necessarias*/
-    init();
+    initAddons();
 
     Player player = createPlayer();
     Input input = createInput();
     Map map = createMap();
+    Camera cam = createCamera();
 
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
@@ -28,7 +45,6 @@ int main(){
     }
 
     al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_mouse_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
     al_register_event_source(queue, al_get_timer_event_source(timer));
 
@@ -41,6 +57,7 @@ int main(){
     int bg_x = 0;
     state curr_state = HOME;
 
+    /*laco principal do jogo*/
     while(1){
         al_wait_for_event(queue, &event);
 
@@ -56,23 +73,33 @@ int main(){
             }
 
             else if(curr_state == RUNNING){
-                updatePlayer(&player, input, map, 100);
-                
-                if(input.right)
-                    bg_x -= 2;
-                if(bg_x < -al_get_bitmap_width(bg))
-                    bg_x = 0;
+                updatePlayer(&player, input, map);
 
-                drawGame(player, map, bg, bg_x);
+                if(player.hp <= 0){
+                    curr_state = GAME_OVER;
+                    continue;
+                }
+
+                updateBackground(input, bg, &bg_x);
+
+                cam.x = player.pos_x - al_get_display_width(disp)/2;
+                if(cam.x < 0)
+                    cam.x = 0;
+
+                drawGame(player, map, bg, bg_x, cam);
                 al_flip_display();
             }
             else if(curr_state == PAUSED){
-                drawGame(player, map, bg, bg_x);
+                drawGame(player, map, bg, bg_x, cam);
                 drawPausedScreen(disp, font);
                 al_flip_display();
             }
+            else if(curr_state == GAME_OVER){
+                drawGameOver(disp,font);
+                resetGame(&player, &input, &bg_x);
+                al_flip_display();
+            }
         }
-
     }
 
     al_destroy_display(disp);

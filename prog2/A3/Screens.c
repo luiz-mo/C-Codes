@@ -32,6 +32,16 @@ void confirmationPopup(ALLEGRO_FONT *font, ALLEGRO_DISPLAY *disp){
     );
 }
 
+void updateBackground(Input input, ALLEGRO_BITMAP *bg, int *bg_x){
+    if(input.right)
+        *bg_x -= 2;
+    else if(input.left)
+        *bg_x += 2;
+
+    if(*bg_x < -al_get_bitmap_width(bg))
+        *bg_x = 0;
+}
+
 void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, int selected){
     int width = al_get_display_width(disp);
     int height = al_get_display_height(disp);
@@ -88,17 +98,17 @@ void drawPausedScreen(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font){
     );
 }
 
-void drawPlatform(Platform plat){
+void drawPlatform(Platform plat, Camera cam){
     al_draw_filled_rectangle(
-        plat.pos_x,
-        plat.pos_y, 
-        plat.pos_x + plat.width,
-        plat.pos_y + plat.height,
+        plat.pos_x - cam.x,
+        plat.pos_y - cam.y, 
+        plat.pos_x + plat.width - cam.x,
+        plat.pos_y + plat.height - cam.y,
         al_map_rgb(255, 255, 255)
     );
 }
 
-void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x){
+void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x, Camera cam){
     /*desenha background*/
     int bg_w = al_get_bitmap_width(bg);
 
@@ -108,10 +118,16 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x){
     /*desenha plataformas*/
     int i;
     for(i=0;i < map.n_plats;i++)
-        drawPlatform(map.plats[i]);
+        drawPlatform(map.plats[i], cam);
 
     /*desenha o jogador*/
-    al_draw_rectangle(p.pos_x, p.pos_y, p.pos_x + 50, p.pos_y - 80, al_map_rgb(255, 0, 0), 5);
+    al_draw_rectangle(
+        p.pos_x - cam.x,
+        p.pos_y - cam.y,
+        p.pos_x + p.width - cam.x,
+        p.pos_y - p.height - cam.y,
+        al_map_rgb(255, 0, 0),
+        5);
 
     /*desenha barra de vida*/
     int x = 50;
@@ -125,6 +141,14 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x){
     /*hp*/
     al_draw_filled_rectangle(x, y, x+hp_w, y+bar_h, al_map_rgb(255, 0, 0));
 
+}
+
+void drawGameOver(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font){
+    int width = al_get_display_width(disp);
+    int height = al_get_display_height(disp);
+
+    al_draw_filled_rectangle(0, 0, width, height, al_map_rgb(0, 0, 0));
+    al_draw_text(font, al_map_rgb(255, 255, 0), width/2, height/2, ALLEGRO_ALIGN_CENTER, "GAME OVER");
 }
 
 void handleInput(ALLEGRO_EVENT event, Input *input, int *selected, state *curr_state, ALLEGRO_DISPLAY *d, ALLEGRO_FONT *f){
@@ -221,6 +245,19 @@ void handleInput(ALLEGRO_EVENT event, Input *input, int *selected, state *curr_s
                     *curr_state = PAUSED;
                     break;
 
+                case ALLEGRO_KEY_ENTER:
+                    input->crouch = 0;
+                    input->jump = 0;
+                    input->left = 0;
+                    input->right = 0;
+                    *curr_state = HOME;
+            }
+        }
+    }
+
+    else if(*curr_state == GAME_OVER){
+        if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+            switch(event.keyboard.keycode){
                 case ALLEGRO_KEY_ENTER:
                     *curr_state = HOME;
             }
