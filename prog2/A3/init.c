@@ -23,8 +23,8 @@ Input createInput(){
 Map createMap(){
     Map map;
 
-    Platform ground = {0, 530, 3000, 70};
-    Platform plat1 = {300, 420, 200, 30};
+    Platform ground = {0, 530, 10000, 70};
+    Platform plat1 = {300, 430, 200, 30};
     Platform plat2 = {700, 320, 150, 30};
 
     map.plats[0] = ground;

@@ -5,9 +5,9 @@
 
 typedef enum{
     IDLE,
-    RUNNING,
-    CROUCHED,
-    JUMPING
+    RUN,
+    CROUCH,
+    JUMP
 } player_state;
 
 typedef struct{

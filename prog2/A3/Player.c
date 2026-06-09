@@ -37,55 +37,82 @@ int checkCollision(Player *p, Map map){
 void updatePlayer(Player *player, Input input, Map map){
     if(input.left)
         player->vx = -10;
+    else
+        player->vx = 0;
 
     if(input.right)
         player->vx = 10;
+    else
+        player->vx = 0;
 
     if(input.jump && player->on_ground){
         player->vy = -17;
         player->on_ground = 0;
     }
 
-    /* handle crouch: apply change only on transition */
     if(input.crouch){
         if(player->height == DEFAULT_HEIGHT){
-            player->pos_y += CROUCH; /* move down since pos_y is top */
+            player->pos_y += CROUCH;
             player->height -= CROUCH;
         }
     }
     else{
         if(player->height != DEFAULT_HEIGHT){
-            player->pos_y -= CROUCH; /* move up to restore */
+            player->pos_y -= CROUCH;
             player->height = DEFAULT_HEIGHT;
+
+            /*verifica se tem espaco para uncrouch*/
+            if(checkCollision(player, map) != -1){
+                player->pos_y += CROUCH;
+                player->height -= CROUCH;
+            }
         }
     }
 
     player->vy += GRAVITY;
 
+    /*guarda posicao antiga para checar colisoes*/
     float prev_y = player->pos_y;
+    float prev_x = player->pos_x;
 
     player->pos_x += player->vx;
-    player->pos_y += player->vy;
 
-    player->vx = 0;
+    int coll_id = checkCollision(player, map);
+    if(coll_id != -1){
+        Platform plat = map.plats[coll_id];
+        /*colidiu pela esquerda*/
+        if(prev_x + player->width <= plat.pos_x){
+            player->pos_x = plat.pos_x - player->width;
+        }
+        /*colidiu pela direita*/
+        else if(prev_x >= plat.pos_x + plat.width){
+            player->pos_x = plat.pos_x + plat.width;
+        }
+
+        player->vx = 0;
+    }
+
+    player->pos_y += player->vy;
 
     if(player->pos_y > map.plats[0].pos_y + map.plats[0].height){
         player->hp = 0;
         return;
     }
 
-    int coll_id = checkCollision(player, map);
-
-    if(coll_id == -1)
-        return;
-
-    Platform plat = map.plats[coll_id];
-
-    /*se estava acima da plat e colidiu, entao veio de cima*/
-    if(prev_y + player->height <= plat.pos_y){
-        player->pos_y = plat.pos_y - player->height;
-        player->vy = 0;
-        player->on_ground = 1;
+    coll_id = checkCollision(player, map);
+    if(coll_id != -1){
+        Platform plat = map.plats[coll_id];
+        if(prev_y + player->height <= plat.pos_y){
+            /*caiu no topo da plat*/
+            player->pos_y = plat.pos_y - player->height;
+            player->vy = 0;
+            player->on_ground = 1;
+        }
+        else if(prev_y >= plat.pos_y + plat.height){
+            /*bateu a cabeca*/
+            player->pos_y = plat.pos_y + plat.height;
+            player->vy = 0;
+        }
     }
 
 
