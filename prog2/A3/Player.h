@@ -3,15 +3,23 @@
 
 #include "init.h"
 
+typedef enum{
+    IDLE,
+    RUNNING,
+    CROUCHED,
+    JUMPING
+} player_state;
+
 typedef struct{
-    int pos_x;
-    int pos_y;
+    float pos_x;
+    float pos_y;
     int vx;
     int vy;
     int height;
     int width;
     int hp;
     int on_ground;
+    player_state state;
 } Player;
 
 Player createPlayer();

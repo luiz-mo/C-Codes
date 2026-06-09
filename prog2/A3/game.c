@@ -10,7 +10,7 @@
 void resetGame(Player *player, Input *input, int *bg_x){
     player->hp = 100;
     player->pos_x = 30;
-    player->pos_y = 600;
+    player->pos_y = 450;
     player->vx = 0;
     player->vy = 0;
     player->on_ground = 1;

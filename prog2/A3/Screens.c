@@ -101,7 +101,7 @@ void drawPausedScreen(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font){
 void drawPlatform(Platform plat, Camera cam){
     al_draw_filled_rectangle(
         plat.pos_x - cam.x,
-        plat.pos_y - cam.y, 
+        plat.pos_y - cam.y,
         plat.pos_x + plat.width - cam.x,
         plat.pos_y + plat.height - cam.y,
         al_map_rgb(255, 255, 255)
@@ -125,7 +125,7 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x, Camera cam){
         p.pos_x - cam.x,
         p.pos_y - cam.y,
         p.pos_x + p.width - cam.x,
-        p.pos_y - p.height - cam.y,
+        p.pos_y + p.height - cam.y,
         al_map_rgb(255, 0, 0),
         5);
 
