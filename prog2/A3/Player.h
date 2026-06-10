@@ -7,10 +7,12 @@ typedef enum{
     IDLE,
     RUN,
     CROUCH,
-    JUMP
+    JUMP,
+    FALL
 } player_state;
 
 typedef struct{
+    ALLEGRO_BITMAP *sprites;
     float pos_x;
     float pos_y;
     int vx;
@@ -20,9 +22,13 @@ typedef struct{
     int hp;
     int on_ground;
     player_state state;
+    int curr_frame;
+    int frame_timer;
 } Player;
 
 Player createPlayer();
+
+void drawPlayer(Player player, Camera cam);
 
 void updatePlayer(Player *player, Input input, Map map);
 

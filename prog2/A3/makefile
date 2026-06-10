@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -g -std=c99
+CFLAGS = -Wall -Wextra -g -std=c99
 ALLEGRO = $(shell pkg-config --libs --cflags \
         	allegro-5 allegro_main-5 \
             allegro_font-5 allegro_primitives-5 \

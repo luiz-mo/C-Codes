@@ -27,28 +27,21 @@ int main(){
     /*inicializacoes necessarias*/
     initAddons();
 
+    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
+    ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
+    ALLEGRO_DISPLAY *disp = al_create_display(1280, 720);
+    ALLEGRO_FONT *font = al_load_ttf_font("./assets/fonts/Jersey20-Regular.ttf", 32, 0);
+    ALLEGRO_BITMAP *bg = al_load_bitmap("./assets/images/PNG/game_background_1/game_background_1.png");
+
+    if(!bg){
+        printf("Erro ao carregar background\n");
+        return 1;
+    }
+
     Player player = createPlayer();
     Input input = createInput();
     Map map = createMap();
     Camera cam = createCamera();
-
-    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 30);
-    ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
-    ALLEGRO_DISPLAY *disp = al_create_display(1280, 720);
-    ALLEGRO_BITMAP *sprite = al_load_bitmap("./assets/images/ben10.png");
-    ALLEGRO_FONT *font = al_load_ttf_font("./assets/fonts/Jersey20-Regular.ttf", 32, 0);
-    ALLEGRO_BITMAP *bg = al_load_bitmap("./assets/images/PNG/game_background_1/game_background_1.png");
-    
-    if(!sprite){
-        printf("Erro ao carregar sprite\n");
-        return 1;
-    }
-
-    if(!bg){
-        printf("Erro ao carregar background\n");
-        al_destroy_bitmap(sprite);
-        return 1;
-    }
 
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
@@ -111,7 +104,7 @@ int main(){
     al_destroy_display(disp);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
-    al_destroy_bitmap(sprite);
+    al_destroy_bitmap(player.sprites);
     al_destroy_bitmap(bg);
 
     al_uninstall_keyboard();

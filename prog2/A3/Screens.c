@@ -38,6 +38,9 @@ void updateBackground(Input input, ALLEGRO_BITMAP *bg, int *bg_x){
     else if(input.left)
         *bg_x += 2;
 
+    if(*bg_x > 0)
+        *bg_x = 0;
+
     if(*bg_x < -al_get_bitmap_width(bg))
         *bg_x = 0;
 }
@@ -121,13 +124,7 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x, Camera cam){
         drawPlatform(map.plats[i], cam);
 
     /*desenha o jogador*/
-    al_draw_rectangle(
-        p.pos_x - cam.x,
-        p.pos_y - cam.y,
-        p.pos_x + p.width - cam.x,
-        p.pos_y + p.height - cam.y,
-        al_map_rgb(255, 0, 0),
-        5);
+    drawPlayer(p, cam);
 
     /*desenha barra de vida*/
     int x = 50;
