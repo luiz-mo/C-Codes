@@ -32,19 +32,6 @@ void confirmationPopup(ALLEGRO_FONT *font, ALLEGRO_DISPLAY *disp){
     );
 }
 
-void updateBackground(Input input, ALLEGRO_BITMAP *bg, int *bg_x){
-    if(input.right)
-        *bg_x -= 2;
-    else if(input.left)
-        *bg_x += 2;
-
-    if(*bg_x > 0)
-        *bg_x = 0;
-
-    if(*bg_x < -al_get_bitmap_width(bg))
-        *bg_x = 0;
-}
-
 void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, ALLEGRO_BITMAP *bg, int selected){
     int width = al_get_display_width(disp);
     int height = al_get_display_height(disp);
@@ -53,7 +40,6 @@ void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, ALLEGRO_BITMAP *bg, int
     color0 = selected == 0 ? al_map_rgb(255,0,0) : al_map_rgb(255,255,255);
     color1 = selected == 1 ? al_map_rgb(255,0,0) : al_map_rgb(255,255,255);
 
-    //al_clear_to_color(al_map_rgb(0,0,255));
     al_draw_bitmap(bg, 0, 0 ,0);
     al_draw_text(
         font,
@@ -102,32 +88,68 @@ void drawPausedScreen(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font){
     );
 }
 
-void drawPlatform(Platform plat, Camera cam){
-    al_draw_filled_rectangle(
-        plat.pos_x - cam.x,
-        plat.pos_y - cam.y,
-        plat.pos_x + plat.width - cam.x,
-        plat.pos_y + plat.height - cam.y,
-        al_map_rgb(255, 255, 255)
+void drawBackground(ALLEGRO_BITMAP *bg, Camera cam){
+    int bg_w = al_get_bitmap_width(bg);
+
+    float parallax_x = -(cam.x * 0.3f);
+
+    while(parallax_x < -bg_w)
+        parallax_x += bg_w;
+
+    int forest_w = al_get_bitmap_width(bg) - 320;
+
+    float forest_x = -(cam.x * 0.3f);
+
+    while(forest_x < -forest_w)
+        forest_x += forest_w;
+
+    al_draw_bitmap_region(
+        bg,
+        320, 0,
+        forest_w, 720,
+        forest_x,
+        0,
+        0
+    );
+
+    al_draw_bitmap_region(
+        bg,
+        320, 0,
+        forest_w, 720,
+        forest_x + forest_w,
+        0,
+        ALLEGRO_FLIP_HORIZONTAL
     );
 }
 
-void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x, Camera cam){
-    /*desenha background*/
-    int bg_w = al_get_bitmap_width(bg);
-
-    al_draw_bitmap(bg, bg_x, 0, 0);
-    al_draw_bitmap(bg, bg_x + bg_w, 0, 0);
-    
-    /*desenha plataformas*/
+void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLEGRO_BITMAP *water, ALLEGRO_BITMAP *spikes, Camera cam){
     int i;
-    for(i=0;i < map.n_plats;i++)
-        drawPlatform(map.plats[i], cam);
+
+    /*desenha background*/
+    drawBackground(bg, cam);
+    
+    /*desenha buracos com agua*/
+    for(i=0;i < map.n_pits;i++)
+        drawPit(map.pits[i], water, cam);
+
+    /*desenha plataformas*/
+    for(i=3;i < map.n_plats;i++)
+        drawPlatform(map.plats[i], plats, cam);
 
     /*desenha o jogador*/
     drawPlayer(p, cam);
 
-    drawEnemy(map, cam);
+    /*desenha os inimigos*/
+    for(i=0;i < map.n_enemies;i++)
+        drawEnemy(map.enemies[i], cam);
+
+    /*desenha os espinhos*/
+    for(i=0;i < map.n_spikes;i++)
+        drawSpike(map.spikes[i], spikes, cam);
+
+    /*desenha as fumacas de gas*/
+    for(i=0;i < map.n_gases;i++)
+        drawGas(map.gases[i], cam);
 
     /*desenha barra de vida*/
     int x = 50;

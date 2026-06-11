@@ -26,6 +26,7 @@ typedef struct{
     int curr_frame;
     int frame_timer;
     int invul_time;
+    int poison_timer;
 } Player;
 
 Player createPlayer();

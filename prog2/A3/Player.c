@@ -1,5 +1,7 @@
 #include "Player.h"
 
+#define DEFAULT_SPEED 7
+#define CROUCH_SPEED 4
 #define DEFAULT_HEIGHT 60
 #define CROUCH_DIFF 15
 
@@ -26,6 +28,7 @@ Player createPlayer(){
     p.curr_frame = 0;
     p.frame_timer = 0;
     p.invul_time = 0;
+    p.poison_timer = 0;
 
     return p;
 }
@@ -122,7 +125,7 @@ int checkCollision(Player *p, Map map){
 int checkEnemyCollision(Player *p, Map map){
     Enemy enemy;
     int i;
-    for(i=0;i < map.n_enemies; i++){
+    for(i=0;i < map.n_enemies;i++){
         enemy = map.enemies[i];
         if(
             p->pos_x < enemy.pos_x + enemy.width &&
@@ -136,6 +139,41 @@ int checkEnemyCollision(Player *p, Map map){
     return -1;
 }
 
+int checkSpikeCollision(Player *p, Map map){
+    Spike spike;
+    int i;
+    for(i=0;i < map.n_spikes;i++){
+        spike = map.spikes[i];
+        if(
+            p->pos_x < spike.pos_x + spike.width &&
+            p->pos_x + p->width > spike.pos_x &&
+            p->pos_y < spike.pos_y + spike.height &&
+            p->pos_y + p->height > spike.pos_y
+        )
+            return i;
+    }
+
+    return -1;
+}
+
+int checkGasCollision(Player *p, Map map){
+    Gas gas;
+    int i;
+    for(i=0;i < map.n_gases;i++){
+        gas = map.gases[i];
+        if(
+            p->pos_x < gas.pos_x + gas.width &&
+            p->pos_x + p->width > gas.pos_x &&
+            p->pos_y < gas.pos_y + gas.height &&
+            p->pos_y + p->height > gas.pos_y
+        )
+            return i;
+    }
+
+    return -1;
+}
+
+/*atualiza o estado do player para aplicar o sprite correto*/
 void updatePlayerState(Player *player){
     if(player->height != DEFAULT_HEIGHT)
         player->state = CROUCH;
@@ -147,9 +185,9 @@ void updatePlayerState(Player *player){
         player->state = RUN;
     else
         player->state = IDLE;
-    
 }
 
+/*trata colisoes atualizando a posicao/causando dano*/
 void handleCollision(Player *player, Map map, int prev_x, int prev_y){
     int coll_id = checkCollision(player, map);
 
@@ -183,6 +221,9 @@ void handleCollision(Player *player, Map map, int prev_x, int prev_y){
             player->pos_y = plat.pos_y - player->height;
             player->vy = 0;
             player->on_ground = 1;
+
+            if(plat.moving)
+                player->pos_x += plat.vx;
         }
         else if(prev_y >= plat.pos_y + plat.height){
             /*bateu a cabeca*/
@@ -197,18 +238,43 @@ void handleCollision(Player *player, Map map, int prev_x, int prev_y){
         player->hp -= map.enemies[coll_id].dmg;
         player->invul_time = 60; /*60 frames = 2 segundos*/
     }
+
+    coll_id = checkSpikeCollision(player, map);
+
+    if(coll_id != -1 && player->invul_time <= 0){
+        player->hp -= map.spikes[coll_id].dmg;
+        player->invul_time = 60;
+    }
+
+    coll_id = checkGasCollision(player,map);
+
+    if(coll_id != -1){
+        if(player->poison_timer < 90)
+            player->poison_timer++;
+        else
+            player->poison_timer = 76;
+    }
+    else
+        if(player->poison_timer > 0)
+            player->poison_timer--;
+
+    if(player->poison_timer != 0 && player->poison_timer % 15 == 0)
+        player->hp -= 2;
+    
 }
 
 void updatePlayer(Player *player, Input input, Map map){
+    int speed = input.crouch ? CROUCH_SPEED : DEFAULT_SPEED;
+
     if(input.left)
-        player->vx = -7;
+        player->vx = -speed;
     else if(input.right)
-        player->vx = 7;
+        player->vx = speed;
     else
         player->vx = 0;
 
     if(input.jump && player->on_ground){
-        player->vy = -15;
+        player->vy = -17;
         player->on_ground = 0;
     }
 
@@ -216,11 +282,6 @@ void updatePlayer(Player *player, Input input, Map map){
         if(player->height == DEFAULT_HEIGHT){
             player->pos_y += CROUCH_DIFF;
             player->height -= CROUCH_DIFF;
-            
-            if(player->vx > 0)
-                player->vx -= 3;
-            else if(player->vx < 0)
-                player->vx += 3;
         }
     }
     else{
@@ -269,6 +330,5 @@ void updatePlayer(Player *player, Input input, Map map){
     }
     else
         player->curr_frame = 0;
-    
 }
 

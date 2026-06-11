@@ -2,15 +2,11 @@
 #include "Player.h"
 #include "Map.h"
 
-void updateBackground(Input input, ALLEGRO_BITMAP *bg, int *bg_x);
-
 void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, ALLEGRO_BITMAP *bg, int selected);
 
 void drawPausedScreen(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font);
 
-void drawEnemy(Map map, Camera cam);
-
-void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x, Camera cam);
+void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLEGRO_BITMAP *water, ALLEGRO_BITMAP *spikes, Camera cam);
 
 void drawGameOver(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font);
 

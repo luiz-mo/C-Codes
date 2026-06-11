@@ -9,6 +9,11 @@ typedef struct{
     float pos_y;
     float width;
     float height;
+
+    int moving;
+    int vx;
+    int lim_left;
+    int lim_right;
 } Platform;
 
 typedef enum{
@@ -20,11 +25,20 @@ typedef enum{
 typedef struct{
     float pos_x;
     float pos_y;
+    float start_y;
     float width;
     float height;
+
     float vx;
     float vy;
+
     float dmg;
+
+    float lim_left;
+    float lim_right;
+    int direction;
+    int wait_timer;
+
     ALLEGRO_BITMAP *sprite;
     int curr_frame;
     int frame_timer;
@@ -32,16 +46,57 @@ typedef struct{
 } Enemy;
 
 typedef struct{
+    float pos_x;
+    float pos_y;
+    float width;
+    float height;
+
+    int dmg;
+} Spike;
+
+typedef struct{
+    float pos_x;
+    float pos_y;
+
+    float width;
+    float height;
+
+    int dmg;
+} Gas;
+
+typedef struct{
     Platform plats[10];
     int n_plats;
+
     Enemy *enemies;
     int n_enemies;
-    Platform holes[10];
-    int n_holes;
+
+    Platform pits[10];
+    int n_pits;
+
+    Spike spikes[10];
+    int n_spikes;
+
+    Gas gases[10];
+    int n_gases;
 } Map;
 
 int createMap(Map *map, ALLEGRO_BITMAP *sprite);
 
-void drawEnemy(Map map, Camera cam);
+Enemy createEnemy(ALLEGRO_BITMAP *s, float x, float y, float lim_l, float lim_r, Enemy_State type);
+
+void updateEnemy(Map *map);
+
+void updatePlatforms(Map *map);
+
+void drawEnemy(Enemy e, Camera cam);
+
+void drawPlatform(Platform plat, ALLEGRO_BITMAP *sprite, Camera cam);
+
+void drawSpike(Spike s, ALLEGRO_BITMAP *sprite, Camera cam);
+
+void drawPit(Platform pit, ALLEGRO_BITMAP *sprite, Camera cam);
+
+void drawGas(Gas gas, Camera cam);
 
 #endif

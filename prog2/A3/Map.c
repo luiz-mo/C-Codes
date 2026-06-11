@@ -1,68 +1,228 @@
 #include "Map.h"
 
-Enemy createEnemy(ALLEGRO_BITMAP *sprite){
+Enemy createEnemy(ALLEGRO_BITMAP *s, float x, float y, float lim_l, float lim_r, Enemy_State type){
     Enemy enemy;
 
-    enemy.pos_x = 700;
-    enemy.pos_y = 480;
+    enemy.pos_x = x;
+    enemy.pos_y = y;
+    enemy.start_y = y;
     enemy.width = 40;
     enemy.height = 50;
     enemy.vx = 0;
     enemy.vy = 0;
     enemy.dmg = 10;
+    enemy.lim_left = lim_l;
+    enemy.lim_right = lim_r;
+    enemy.direction = 1;
+    enemy.wait_timer = 0;
     enemy.curr_frame = 0;
     enemy.frame_timer = 0;
-    enemy.state = E_IDLE;
+    enemy.state = type;
 
-    enemy.sprite = sprite;
+    enemy.sprite = s;
     
     return enemy;
+}
+
+Spike createSpike(float x, float y, float w, float h){
+    Spike spike;
+
+    spike.pos_x = x;
+    spike.pos_y = y;
+    spike.width = w;
+    spike.height = h;
+    spike.dmg = 20;
+
+    return spike;
+}
+
+Gas createGas(float x, float y, float w, float h){
+    Gas gas;
+
+    gas.pos_x = x;
+    gas.pos_y = y;
+    gas.width = w;
+    gas.height = h;
+
+    gas.dmg = 2;
+
+    return gas;
 }
 
 int createMap(Map *map, ALLEGRO_BITMAP *sprite){
     if(!(map->enemies = malloc(sizeof(Enemy) * 10)))
         return 1;
 
-    Platform ground = {0, 530, 5000, 70};
-    Platform plat1 = {300, 430, 200, 30};
-    Platform plat2 = {700, 320, 150, 30};
+    Platform ground1 = {0, 680, 850, 40, 0, 0, 0, 0};
+    Platform ground2 = {1040, 680, 600, 40, 0, 0, 0, 0};
+    Platform ground3 = {1760, 680, 560, 40, 0, 0, 0, 0};
+    Platform ground4 = {2420, 680, 1180, 40, 0, 0, 0, 0};
+    Platform plat1 = {300, 520, 220, 30, 0, 0, 0, 0};
+    Platform plat2 = {560, 400, 160, 30, 0, 0, 0, 0};
+    Platform plat3 = {1210, 560, 190, 30, 0, 0, 0, 0};
+    Platform plat4 = {1460, 440, 180, 30, 1, 10, 1460, 1660};
+    Platform plat5 = {1980, 520, 220, 30, 0, 0, 0, 0};
+    Platform plat6 = {2720, 400, 200, 30, 0, 0, 0, 0};
 
-    map->plats[0] = ground;
-    map->plats[1] = plat1;
-    map->plats[2] = plat2;
+    map->plats[0] = ground1;
+    map->plats[1] = ground2;
+    map->plats[2] = ground3;
+    map->plats[3] = ground4;
+    map->plats[4] = plat1;
+    map->plats[5] = plat2;
+    map->plats[6] = plat3;
+    map->plats[7] = plat4;
+    map->plats[8] = plat5;
+    map->plats[9] = plat6;
 
-    map->n_plats = 3;
+    map->n_plats = 10;
     
-    map->enemies[0] = createEnemy(sprite);
-    map->n_enemies = 1;
+    map->enemies[0] = createEnemy(sprite, 220, 630, 120, 760, E_WALK);
+    map->enemies[1] = createEnemy(sprite, 1520, 630, 1140, 1600, E_WALK);
+    map->enemies[2] = createEnemy(sprite, 620, 350, 560, 560, E_JUMP);
+    map->enemies[3] = createEnemy(sprite, 2780, 350, 2720, 2720, E_JUMP);
+    map->n_enemies = 4;
+
+    Platform pit1 = {850, 680, 190, 40, 0, 0, 0, 0};
+    Platform pit2 = {1640, 680, 120, 40, 0, 0, 0, 0};
+    Platform pit3 = {2340, 680, 80, 40, 0, 0, 0, 0};
+
+    map->pits[0] = pit1;
+    map->pits[1] = pit2;
+    map->pits[2] = pit3;
+    map->n_pits = 3;
+
+    map->spikes[0] = createSpike(1100, 640, 40, 40);
+    map->spikes[1] = createSpike(1380, 616, 64, 64);
+    map->spikes[2] = createSpike(2060, 616, 64, 64);
+    map->spikes[3] = createSpike(2860, 616, 64, 64);
+    map->n_spikes = 4;
+
+    map->gases[0] = createGas(700, 550, 200, 100);
+    map->n_gases = 1;
 
     return 0;
 }
 
-void drawEnemy(Map map, Camera cam){
-    Enemy e = map.enemies[0];
+void updateEnemy(Map *map){
+    Enemy *enemy;
+    const float walk_speed = 2.0f;
+    const int pause_frames = 20;
+    const float jump = -12.0f;
+    const float gravity = 0.5f;
+    int i;
 
+    if(map->n_enemies <= 0)
+        return;
+
+    for(i = 0; i < map->n_enemies; i++){
+        enemy = &map->enemies[i];
+
+        if(enemy->state == E_IDLE){
+            enemy->vx = 0;
+            enemy->vy = 0;
+            enemy->curr_frame = 0;
+        }
+        else if(enemy->state == E_WALK){
+            if(enemy->wait_timer > 0){
+                enemy->wait_timer--;
+                enemy->vx = 0;
+
+                if(enemy->wait_timer == 0)
+                    enemy->direction *= -1;
+            }
+            else{
+                enemy->vx = walk_speed * enemy->direction;
+                enemy->pos_x += enemy->vx;
+
+                if(enemy->pos_x <= enemy->lim_left){
+                    enemy->pos_x = enemy->lim_left;
+                    enemy->wait_timer = pause_frames;
+                    enemy->vx = 0;
+                }
+                else if(enemy->pos_x >= enemy->lim_right){
+                    enemy->pos_x = enemy->lim_right;
+                    enemy->wait_timer = pause_frames;
+                    enemy->vx = 0;
+                }
+            }
+
+            enemy->frame_timer++;
+            if(enemy->frame_timer >= 8){
+                enemy->frame_timer = 0;
+                enemy->curr_frame++;
+                if(enemy->curr_frame > 3)
+                    enemy->curr_frame = 0;
+            }
+        }
+        else if(enemy->state == E_JUMP){
+            if(enemy->wait_timer > 0){
+                enemy->wait_timer--;
+                if(enemy->wait_timer == 0){
+                    enemy->vy = jump;
+                }
+            }
+            else{
+                enemy->vy += gravity;
+                enemy->pos_y += enemy->vy;
+
+                if(enemy->pos_y >= enemy->start_y){
+                    enemy->pos_y = enemy->start_y;
+                    enemy->vy = 0;
+                    enemy->wait_timer = 30;
+                }
+            }
+            enemy->curr_frame = 0;
+        }
+    }
+}
+
+void updatePlatforms(Map *map){
+    int i;
+
+    for(i = 0; i < map->n_plats; i++){
+        Platform *p = &map->plats[i];
+
+        if(!p->moving)
+            continue;
+
+        p->pos_x += p->vx;
+
+        if(p->pos_x < p->lim_left || p->pos_x + p->width > p->lim_right)
+            p->vx *= -1;
+    }
+}
+
+void drawEnemy(Enemy e, Camera cam){
     int sprite_x;
     int sprite_y;
-    int sprite_w = 56;
     int sprite_h = 40;
+    int sprite_w;
 
+    
     switch(e.state){
         case E_IDLE:
+            sprite_w = 56;
             sprite_x = e.curr_frame * sprite_w;
             sprite_y = 0;
             break;
 
         case E_WALK:
-            sprite_x = e.curr_frame * sprite_w;
-            sprite_y = 40;
-            break;
-
-        case E_JUMP:
+            sprite_w = 45;
             sprite_x = e.curr_frame * sprite_w;
             sprite_y = 80;
             break;
+
+        case E_JUMP:
+                sprite_w = 55;
+                sprite_x = 0;
+                sprite_y = 40;
     }
+
+    int flag = e.vx < 0 ? ALLEGRO_FLIP_HORIZONTAL : 0;
+
+    float draw_x = e.pos_x - cam.x + (e.width - sprite_w) / 2.0f;
+    float draw_y = e.pos_y - cam.y + (e.height - sprite_h);
 
     al_draw_bitmap_region(
         e.sprite,
@@ -70,8 +230,62 @@ void drawEnemy(Map map, Camera cam){
         sprite_y,
         sprite_w,
         sprite_h,
-        e.pos_x - cam.x,
-        e.pos_y - cam.y,
+        draw_x,
+        draw_y,
+        flag
+    );
+}
+
+void drawSpike(Spike s, ALLEGRO_BITMAP *sprite, Camera cam){
+    al_draw_scaled_bitmap(
+        sprite,
+        0, 0,
+        al_get_bitmap_width(sprite),
+        al_get_bitmap_height(sprite),
+        s.pos_x - cam.x,
+        s.pos_y - cam.y,
+        s.width,
+        s.height,
         0
+    );
+}
+
+void drawPlatform(Platform plat, ALLEGRO_BITMAP *sprite, Camera cam){
+    al_draw_scaled_bitmap(
+        sprite,
+        0,
+        0,
+        al_get_bitmap_width(sprite),
+        al_get_bitmap_height(sprite),
+        plat.pos_x - cam.x,
+        plat.pos_y - cam.y,
+        plat.width,
+        plat.height,
+        0
+    );
+}
+
+void drawPit(Platform pit, ALLEGRO_BITMAP *sprite, Camera cam){
+    al_draw_scaled_bitmap(
+        sprite,
+        0,
+        0,
+        al_get_bitmap_width(sprite),
+        al_get_bitmap_height(sprite),
+        pit.pos_x - cam.x,
+        pit.pos_y - cam.y,
+        pit.width,
+        pit.height,
+        0
+    );
+}
+
+void drawGas(Gas gas, Camera cam){
+    al_draw_filled_rectangle(
+        gas.pos_x - cam.x,
+        gas.pos_y - cam.y,
+        gas.pos_x + gas.width - cam.x,
+        gas.pos_y + gas.height - cam.y,
+        al_map_rgba(0, 255, 0, 120)
     );
 }
