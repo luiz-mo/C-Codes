@@ -25,18 +25,6 @@ typedef struct{
 } Input;
 
 typedef struct{
-    float pos_x;
-    float pos_y;
-    float width;
-    float height;
-} Platform;
-
-typedef struct{
-    Platform plats[10];
-    int n_plats;
-} Map;
-
-typedef struct{
     float x;
     float y;
 } Camera;
@@ -44,8 +32,6 @@ typedef struct{
 void initAddons();
 
 Input createInput();
-
-Map createMap();
 
 Camera createCamera();
 

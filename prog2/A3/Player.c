@@ -25,6 +25,7 @@ Player createPlayer(){
     p.state = IDLE;
     p.curr_frame = 0;
     p.frame_timer = 0;
+    p.invul_time = 0;
 
     return p;
 }
@@ -71,10 +72,10 @@ void drawPlayer(Player player, Camera cam){
             break;
 
         case FALL:
-            sprite_x = 12;
-            sprite_y = 288;
+            sprite_x = 135;
+            sprite_y = 156;
             sprite_w = 34;
-            sprite_h = 34;
+            sprite_h = 47;
 
             break;
 
@@ -88,22 +89,46 @@ void drawPlayer(Player player, Camera cam){
     float draw_x = player.pos_x - cam.x + (player.width - sprite_w) / 2.0f;
     float draw_y = player.pos_y - cam.y + (player.height - sprite_h);
 
+    int flag = 0;
+
+    if(player.vx < 0)
+        flag = ALLEGRO_FLIP_HORIZONTAL;
+
     al_draw_bitmap_region(
         player.sprites,
         sprite_x, sprite_y,
         sprite_w, sprite_h,
         draw_x, draw_y,
-        0);
+        flag);
 }
 
 int checkCollision(Player *p, Map map){ 
-    for(int i = 0; i < map.n_plats; i++){
-        Platform plat = map.plats[i];
+    Platform plat;
+    int i;
+    for(i=0; i < map.n_plats; i++){
+        plat = map.plats[i];
         if(
             p->pos_x < plat.pos_x + plat.width &&
             p->pos_x + p->width > plat.pos_x &&
             p->pos_y < plat.pos_y + plat.height &&
             p->pos_y + p->height > plat.pos_y
+        )
+            return i;
+    }
+
+    return -1;
+}
+
+int checkEnemyCollision(Player *p, Map map){
+    Enemy enemy;
+    int i;
+    for(i=0;i < map.n_enemies; i++){
+        enemy = map.enemies[i];
+        if(
+            p->pos_x < enemy.pos_x + enemy.width &&
+            p->pos_x + p->width > enemy.pos_x &&
+            p->pos_y < enemy.pos_y + enemy.height &&
+            p->pos_y + p->height > enemy.pos_y
         )
             return i;
     }
@@ -125,50 +150,9 @@ void updatePlayerState(Player *player){
     
 }
 
-void updatePlayer(Player *player, Input input, Map map){
-    if(input.left)
-        player->vx = -10;
-    else if(input.right)
-        player->vx = 10;
-    else
-        player->vx = 0;
-
-    if(input.jump && player->on_ground){
-        player->vy = -17;
-        player->on_ground = 0;
-    }
-
-    if(input.crouch){
-        if(player->height == DEFAULT_HEIGHT){
-            player->pos_y += CROUCH_DIFF;
-            player->height -= CROUCH_DIFF;
-        }
-    }
-    else{
-        if(player->height != DEFAULT_HEIGHT){
-            player->pos_y -= CROUCH_DIFF;
-            player->height = DEFAULT_HEIGHT;
-
-            /*verifica se tem espaco para uncrouch*/
-            if(checkCollision(player, map) != -1){
-                player->pos_y += CROUCH_DIFF;
-                player->height -= CROUCH_DIFF;
-            }
-        }
-    }
-
-    player->vy += GRAVITY;
-
-    /*guarda posicao antiga para checar colisoes*/
-    float prev_y = player->pos_y;
-    float prev_x = player->pos_x;
-
-    player->pos_x += player->vx;
-
-    if(player->pos_x < map.plats[0].pos_x)
-        player->pos_x = map.plats[0].pos_x;
-
+void handleCollision(Player *player, Map map, int prev_x, int prev_y){
     int coll_id = checkCollision(player, map);
+
     if(coll_id != -1){
         Platform plat = map.plats[coll_id];
         /*colidiu pela esquerda*/
@@ -207,23 +191,84 @@ void updatePlayer(Player *player, Input input, Map map){
         }
     }
 
+    coll_id = checkEnemyCollision(player, map);
+
+    if(coll_id != -1 && player->invul_time <= 0){
+        player->hp -= map.enemies[coll_id].dmg;
+        player->invul_time = 60; /*60 frames = 2 segundos*/
+    }
+}
+
+void updatePlayer(Player *player, Input input, Map map){
+    if(input.left)
+        player->vx = -7;
+    else if(input.right)
+        player->vx = 7;
+    else
+        player->vx = 0;
+
+    if(input.jump && player->on_ground){
+        player->vy = -15;
+        player->on_ground = 0;
+    }
+
+    if(input.crouch){
+        if(player->height == DEFAULT_HEIGHT){
+            player->pos_y += CROUCH_DIFF;
+            player->height -= CROUCH_DIFF;
+            
+            if(player->vx > 0)
+                player->vx -= 3;
+            else if(player->vx < 0)
+                player->vx += 3;
+        }
+    }
+    else{
+        if(player->height != DEFAULT_HEIGHT){
+            player->pos_y -= CROUCH_DIFF;
+            player->height = DEFAULT_HEIGHT;
+
+            /*verifica se tem espaco para uncrouch*/
+            if(checkCollision(player, map) != -1){
+                player->pos_y += CROUCH_DIFF;
+                player->height -= CROUCH_DIFF;
+            }
+        }
+    }
+
+    player->vy += GRAVITY;
+
+    /*guarda posicao antiga para checar colisoes*/
+    float prev_y = player->pos_y;
+    float prev_x = player->pos_x;
+
+    player->pos_x += player->vx;
+
+    if(player->pos_x < map.plats[0].pos_x)
+        player->pos_x = map.plats[0].pos_x;
+
+    if(player->invul_time > 0)
+        player->invul_time--;
+
+    handleCollision(player, map, prev_x, prev_y);
+
     updatePlayerState(player);
 
+    /*atualiza frame de corrida*/
     if(player->state == RUN){
-    player->frame_timer++;
+        player->frame_timer++;
 
-    if(player->frame_timer >= 4){
-        player->frame_timer = 0;
+        if(player->frame_timer >= 4){
+            player->frame_timer = 0;
 
-        player->curr_frame++;
+            player->curr_frame++;
 
-        if(player->curr_frame >= 8)
-            player->curr_frame = 0;
+            if(player->curr_frame >= 8)
+                player->curr_frame = 0;
+        }
     }
-    }
-
     else
-    player->curr_frame = 0;
+        player->curr_frame = 0;
     
 }
 

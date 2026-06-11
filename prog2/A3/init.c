@@ -20,22 +20,6 @@ Input createInput(){
     return input;
 }
 
-Map createMap(){
-    Map map;
-
-    Platform ground = {0, 530, 10000, 70};
-    Platform plat1 = {300, 430, 200, 30};
-    Platform plat2 = {700, 320, 150, 30};
-
-    map.plats[0] = ground;
-    map.plats[1] = plat1;
-    map.plats[2] = plat2;
-
-    map.n_plats = 3;
-    
-    return map;
-}
-
 Camera createCamera(){
     Camera cam;
 

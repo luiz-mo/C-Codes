@@ -45,15 +45,16 @@ void updateBackground(Input input, ALLEGRO_BITMAP *bg, int *bg_x){
         *bg_x = 0;
 }
 
-void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, int selected){
+void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, ALLEGRO_BITMAP *bg, int selected){
     int width = al_get_display_width(disp);
     int height = al_get_display_height(disp);
     ALLEGRO_COLOR color0, color1;
 
-    color0 = selected == 0 ? al_map_rgb(255,255,0) : al_map_rgb(255,255,255);
-    color1 = selected == 1 ? al_map_rgb(255,255,0) : al_map_rgb(255,255,255);
+    color0 = selected == 0 ? al_map_rgb(255,0,0) : al_map_rgb(255,255,255);
+    color1 = selected == 1 ? al_map_rgb(255,0,0) : al_map_rgb(255,255,255);
 
-    al_clear_to_color(al_map_rgb(0,0,255));
+    //al_clear_to_color(al_map_rgb(0,0,255));
+    al_draw_bitmap(bg, 0, 0 ,0);
     al_draw_text(
         font,
         color0,
@@ -125,6 +126,8 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, int bg_x, Camera cam){
 
     /*desenha o jogador*/
     drawPlayer(p, cam);
+
+    drawEnemy(map, cam);
 
     /*desenha barra de vida*/
     int x = 50;

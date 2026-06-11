@@ -5,8 +5,8 @@ ALLEGRO = $(shell pkg-config --libs --cflags \
             allegro_font-5 allegro_primitives-5 \
             allegro_ttf-5 allegro_image-5)
 
-HDR = Player.h Screens.h init.h
-OBJ = game.o Player.o Screens.o init.o
+HDR = Player.h Screens.h init.h Map.h
+OBJ = game.o Player.o Screens.o init.o Map.o
 
 all: game
 
@@ -24,6 +24,9 @@ Screens.o: Screens.c $(HDR)
 
 init.o: init.c $(HDR)
 	$(CC) $(CFLAGS) $(ALLEGRO) -c init.c
+
+Map.o: Map.c $(HDR)
+	$(CC) $(CFLAGS) $(ALLEGRO) -c Map.c 
 
 clean:
 	rm -f *.o game

@@ -31,7 +31,11 @@ int main(){
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
     ALLEGRO_DISPLAY *disp = al_create_display(1280, 720);
     ALLEGRO_FONT *font = al_load_ttf_font("./assets/fonts/Jersey20-Regular.ttf", 32, 0);
+    ALLEGRO_BITMAP *bg_home = al_load_bitmap("./assets/images/ben_backgroundd.jpg");
     ALLEGRO_BITMAP *bg = al_load_bitmap("./assets/images/PNG/game_background_1/game_background_1.png");
+    ALLEGRO_BITMAP *enemy = al_load_bitmap("./assets/images/dnalien_sprite.png");
+
+    al_set_window_title(disp, "omni");
 
     if(!bg){
         printf("Erro ao carregar background\n");
@@ -40,7 +44,11 @@ int main(){
 
     Player player = createPlayer();
     Input input = createInput();
-    Map map = createMap();
+    Map map;
+    if(createMap(&map, enemy) != 0){
+        printf("Erro ao alocar inimigos");
+        return 1;
+    }
     Camera cam = createCamera();
 
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -67,7 +75,7 @@ int main(){
 
         if(event.type == ALLEGRO_EVENT_TIMER){
             if(curr_state == HOME){
-                drawHome(disp, font, selected);
+                drawHome(disp, font, bg_home, selected);
                 al_flip_display();
             }
 
@@ -106,9 +114,9 @@ int main(){
     al_destroy_event_queue(queue);
     al_destroy_bitmap(player.sprites);
     al_destroy_bitmap(bg);
+    al_destroy_bitmap(bg_home);
 
     al_uninstall_keyboard();
-    al_uninstall_mouse();
 
     return 0;
 }

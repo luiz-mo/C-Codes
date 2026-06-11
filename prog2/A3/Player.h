@@ -2,6 +2,7 @@
 #define __PLAYER__
 
 #include "init.h"
+#include "Map.h"
 
 typedef enum{
     IDLE,
@@ -9,7 +10,7 @@ typedef enum{
     CROUCH,
     JUMP,
     FALL
-} player_state;
+} Player_State;
 
 typedef struct{
     ALLEGRO_BITMAP *sprites;
@@ -21,9 +22,10 @@ typedef struct{
     int width;
     int hp;
     int on_ground;
-    player_state state;
+    Player_State state;
     int curr_frame;
     int frame_timer;
+    int invul_time;
 } Player;
 
 Player createPlayer();
