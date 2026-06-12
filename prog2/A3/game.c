@@ -35,6 +35,7 @@ int main(){
     ALLEGRO_BITMAP *spikes = al_load_bitmap("./assets/images/spike.png");
     ALLEGRO_BITMAP *water = al_load_bitmap("./assets/images/water.png");    
     ALLEGRO_BITMAP *plats = al_load_bitmap("./assets/images/platforms.png");
+    ALLEGRO_BITMAP *omni = al_load_bitmap("./assets/images/omnitrix.png");
 
     al_set_window_title(disp, "omni");
 
@@ -84,7 +85,12 @@ int main(){
                 updatePlayer(&player, input, map);
                 updateEnemy(&map);
 
-                if(player.hp <= 0){
+                if(player.won){
+                    curr_state = GAME_WON;
+                    continue;
+                }
+
+                else if(player.hp <= 0){
                     curr_state = GAME_OVER;
                     continue;
                 }
@@ -93,16 +99,21 @@ int main(){
                 if(cam.x < 0)
                     cam.x = 0;
 
-                drawGame(player, map, bg, plats, water, spikes, cam);
+                drawGame(player, map, bg, plats, water, spikes, omni, cam);
                 al_flip_display();
             }
             else if(curr_state == PAUSED){
-                drawGame(player, map, bg, plats, water, spikes, cam);
+                drawGame(player, map, bg, plats, water, spikes, omni, cam);
                 drawPausedScreen(disp, font);
                 al_flip_display();
             }
             else if(curr_state == GAME_OVER){
                 drawGameOver(disp,font);
+                resetGame(&player, &input);
+                al_flip_display();
+            }
+            else if(curr_state == GAME_WON){
+                drawGameWon(disp, font);
                 resetGame(&player, &input);
                 al_flip_display();
             }

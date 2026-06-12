@@ -122,7 +122,11 @@ void drawBackground(ALLEGRO_BITMAP *bg, Camera cam){
     );
 }
 
-void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLEGRO_BITMAP *water, ALLEGRO_BITMAP *spikes, Camera cam){
+void drawGame(
+            Player p, Map map,
+            ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLEGRO_BITMAP *water,
+            ALLEGRO_BITMAP *spikes, ALLEGRO_BITMAP *omni, Camera cam){
+
     int i;
 
     /*desenha background*/
@@ -133,7 +137,7 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLE
         drawPit(map.pits[i], water, cam);
 
     /*desenha plataformas*/
-    for(i=3;i < map.n_plats;i++)
+    for(i=5;i < map.n_plats;i++)
         drawPlatform(map.plats[i], plats, cam);
 
     /*desenha o jogador*/
@@ -150,6 +154,8 @@ void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLE
     /*desenha as fumacas de gas*/
     for(i=0;i < map.n_gases;i++)
         drawGas(map.gases[i], cam);
+
+    drawOmnitrix(omni, map, cam);
 
     /*desenha barra de vida*/
     int x = 50;
@@ -171,6 +177,16 @@ void drawGameOver(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font){
 
     al_draw_filled_rectangle(0, 0, width, height, al_map_rgb(0, 0, 0));
     al_draw_text(font, al_map_rgb(255, 255, 0), width/2, height/2, ALLEGRO_ALIGN_CENTER, "GAME OVER");
+}
+
+void drawGameWon(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font){
+    int width = al_get_display_width(disp);
+    int height = al_get_display_height(disp);
+
+    al_clear_to_color(al_map_rgb(0, 255, 0));
+    al_draw_text(font, al_map_rgb(0, 0, 0), width/2, height/3, ALLEGRO_ALIGN_CENTER, "VOCE GANHOU");
+    al_draw_text(font, al_map_rgb(0, 0, 0), width/2, height/2, ALLEGRO_ALIGN_CENTER, "Voce conseguiu coletar o omnitrix!");
+    al_draw_text(font, al_map_rgb(0, 0, 0), width/1.5, height/1.5, ALLEGRO_ALIGN_CENTER, "Pressione Enter para continuar");
 }
 
 void handleInput(ALLEGRO_EVENT event, Input *input, int *selected, state *curr_state, ALLEGRO_DISPLAY *d, ALLEGRO_FONT *f){
@@ -282,6 +298,14 @@ void handleInput(ALLEGRO_EVENT event, Input *input, int *selected, state *curr_s
             switch(event.keyboard.keycode){
                 case ALLEGRO_KEY_ENTER:
                     *curr_state = HOME;
+            }
+        }
+    }
+
+    else if(*curr_state == GAME_WON){
+        if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+            if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
+                *curr_state = HOME;
             }
         }
     }

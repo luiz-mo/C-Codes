@@ -29,6 +29,7 @@ Player createPlayer(){
     p.frame_timer = 0;
     p.invul_time = 0;
     p.poison_timer = 0;
+    p.won = 0;
 
     return p;
 }
@@ -187,6 +188,19 @@ void updatePlayerState(Player *player){
         player->state = IDLE;
 }
 
+int checkOmnitrixCollect(Player *p, Map map){
+    Omnitrix omni = map.omnitrix;
+    if(
+            p->pos_x < omni.pos_x + omni.width &&
+            p->pos_x + p->width > omni.pos_x &&
+            p->pos_y < omni.pos_y + omni.height &&
+            p->pos_y + p->height > omni.pos_y
+        )
+        return 1;
+
+    return 0;
+}
+
 /*trata colisoes atualizando a posicao/causando dano*/
 void handleCollision(Player *player, Map map, int prev_x, int prev_y){
     int coll_id = checkCollision(player, map);
@@ -260,7 +274,9 @@ void handleCollision(Player *player, Map map, int prev_x, int prev_y){
 
     if(player->poison_timer != 0 && player->poison_timer % 15 == 0)
         player->hp -= 2;
-    
+
+    if(checkOmnitrixCollect(player, map))
+        player->won = 1;
 }
 
 void updatePlayer(Player *player, Input input, Map map){
@@ -274,7 +290,7 @@ void updatePlayer(Player *player, Input input, Map map){
         player->vx = 0;
 
     if(input.jump && player->on_ground){
-        player->vy = -17;
+        player->vy = -20;
         player->on_ground = 0;
     }
 

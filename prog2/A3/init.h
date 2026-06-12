@@ -14,7 +14,8 @@ typedef enum{
     PAUSED,
     EXIT,
     CONFIRM,
-    GAME_OVER
+    GAME_OVER,
+    GAME_WON
 } state;
 
 typedef struct{

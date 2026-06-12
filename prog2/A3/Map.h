@@ -65,7 +65,15 @@ typedef struct{
 } Gas;
 
 typedef struct{
-    Platform plats[10];
+    float pos_x;
+    float pos_y;
+
+    float width;
+    float height;
+} Omnitrix;
+
+typedef struct{
+    Platform plats[20];
     int n_plats;
 
     Enemy *enemies;
@@ -79,6 +87,8 @@ typedef struct{
 
     Gas gases[10];
     int n_gases;
+
+    Omnitrix omnitrix;
 } Map;
 
 int createMap(Map *map, ALLEGRO_BITMAP *sprite);
@@ -98,5 +108,7 @@ void drawSpike(Spike s, ALLEGRO_BITMAP *sprite, Camera cam);
 void drawPit(Platform pit, ALLEGRO_BITMAP *sprite, Camera cam);
 
 void drawGas(Gas gas, Camera cam);
+
+void drawOmnitrix(ALLEGRO_BITMAP *sprite, Map map, Camera cam);
 
 #endif

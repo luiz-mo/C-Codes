@@ -53,53 +53,69 @@ int createMap(Map *map, ALLEGRO_BITMAP *sprite){
     if(!(map->enemies = malloc(sizeof(Enemy) * 10)))
         return 1;
 
-    Platform ground1 = {0, 680, 850, 40, 0, 0, 0, 0};
-    Platform ground2 = {1040, 680, 600, 40, 0, 0, 0, 0};
-    Platform ground3 = {1760, 680, 560, 40, 0, 0, 0, 0};
-    Platform ground4 = {2420, 680, 1180, 40, 0, 0, 0, 0};
-    Platform plat1 = {300, 520, 220, 30, 0, 0, 0, 0};
-    Platform plat2 = {560, 400, 160, 30, 0, 0, 0, 0};
-    Platform plat3 = {1210, 560, 190, 30, 0, 0, 0, 0};
-    Platform plat4 = {1460, 440, 180, 30, 1, 10, 1460, 1660};
-    Platform plat5 = {1980, 520, 220, 30, 0, 0, 0, 0};
-    Platform plat6 = {2720, 400, 200, 30, 0, 0, 0, 0};
+    Platform ground1 = {0, 680, 900, 40, 0, 0, 0, 0};
+    Platform ground2 = {1100, 680, 600, 40, 0, 0, 0, 0};
+    Platform ground3 = {1850, 680, 500, 40, 0, 0, 0, 0};
+    Platform ground4 = {2950, 680, 900, 40, 0, 0, 0, 0};
+    Platform ground5 = {4000, 680, 1200, 40, 0, 0, 0, 0};
+    Platform plat1 = {1550, 520, 180, 30, 0, 0, 0, 0};
+    Platform plat2 = {1800, 430, 180, 30, 0, 0, 0, 0};
+    Platform plat3 = {4100, 500, 180, 30, 0, 0, 0, 0};
+    Platform plat4 = {4400, 420, 180, 30, 0, 0, 0, 0};
+    Platform plat5 = {4700, 340, 200, 30, 0, 0, 0, 0};
+    Platform moving1 = {2350, 500, 180, 30, 1, 4, 2350, 2750};
+    Platform moving2 = {4850, 500, 180, 30, 1, 5, 4850, 5250};
 
     map->plats[0] = ground1;
     map->plats[1] = ground2;
     map->plats[2] = ground3;
     map->plats[3] = ground4;
-    map->plats[4] = plat1;
-    map->plats[5] = plat2;
-    map->plats[6] = plat3;
-    map->plats[7] = plat4;
-    map->plats[8] = plat5;
-    map->plats[9] = plat6;
-
-    map->n_plats = 10;
+    map->plats[4] = ground5;
+    map->plats[5] = plat1;
+    map->plats[6] = plat2;
+    map->plats[7] = plat3;
+    map->plats[8] = plat4;
+    map->plats[9] = plat5;
+    map->plats[10] = moving1;
+    map->plats[11] = moving2;
+    map->n_plats = 12;
     
-    map->enemies[0] = createEnemy(sprite, 220, 630, 120, 760, E_WALK);
-    map->enemies[1] = createEnemy(sprite, 1520, 630, 1140, 1600, E_WALK);
-    map->enemies[2] = createEnemy(sprite, 620, 350, 560, 560, E_JUMP);
-    map->enemies[3] = createEnemy(sprite, 2780, 350, 2720, 2720, E_JUMP);
-    map->n_enemies = 4;
+    map->enemies[0] = createEnemy(sprite, 250, 630, 150, 750, E_WALK);
+    map->enemies[1] = createEnemy(sprite, 1350, 630, 1200, 1600, E_WALK);
+    map->enemies[2] = createEnemy(sprite, 3450, 630, 3100, 3750, E_WALK);
+    map->enemies[3] = createEnemy(sprite, 1800, 380, 1800, 1800, E_JUMP);
+    map->enemies[4] = createEnemy(sprite, 2600, 450, 2600, 2600, E_JUMP);
+    map->enemies[5] = createEnemy(sprite, 4450, 370, 4450, 4450, E_JUMP);
+    map->n_enemies = 6;
 
-    Platform pit1 = {850, 680, 190, 40, 0, 0, 0, 0};
-    Platform pit2 = {1640, 680, 120, 40, 0, 0, 0, 0};
-    Platform pit3 = {2340, 680, 80, 40, 0, 0, 0, 0};
+    Platform pit1 = {900, 680, 200, 40, 0, 0, 0, 0};
+    Platform pit2 = {1700, 680, 150, 40, 0, 0, 0, 0};
+    Platform pit3 = {2350, 680, 600, 40, 0, 0, 0, 0};
+    Platform pit4 = {3850, 680, 150, 40, 0, 0, 0, 0};
 
     map->pits[0] = pit1;
     map->pits[1] = pit2;
     map->pits[2] = pit3;
-    map->n_pits = 3;
+    map->pits[3] = pit4;
+    map->n_pits = 4;
 
-    map->spikes[0] = createSpike(1100, 640, 40, 40);
-    map->spikes[1] = createSpike(1380, 616, 64, 64);
-    map->spikes[2] = createSpike(2060, 616, 64, 64);
-    map->spikes[3] = createSpike(2860, 616, 64, 64);
-    map->n_spikes = 4;
+    map->spikes[0] = createSpike(1250,640,64,64);
+    map->spikes[1] = createSpike(3150,616,64,64);
+    map->spikes[2] = createSpike(3300,616,64,64);
+    map->spikes[3] = createSpike(3450,616,64,64);
+    map->spikes[4] = createSpike(3600,616,64,64);
+    map->spikes[5] = createSpike(4550,616,64,64);
+    map->spikes[6] = createSpike(4625,616,64,64);
+    map->n_spikes = 7;
 
-    map->gases[0] = createGas(700, 550, 200, 100);
-    map->n_gases = 1;
+    map->gases[0] = createGas(1600, 550, 350, 130);
+    map->gases[1] = createGas(4050, 550, 500, 130);
+    map->n_gases = 2;
+
+    map->omnitrix.pos_x = 5300;
+    map->omnitrix.pos_y = 450;
+    map->omnitrix.width = 45;
+    map->omnitrix.height = 45;
 
     return 0;
 }
@@ -268,8 +284,7 @@ void drawPlatform(Platform plat, ALLEGRO_BITMAP *sprite, Camera cam){
 void drawPit(Platform pit, ALLEGRO_BITMAP *sprite, Camera cam){
     al_draw_scaled_bitmap(
         sprite,
-        0,
-        0,
+        0, 0,
         al_get_bitmap_width(sprite),
         al_get_bitmap_height(sprite),
         pit.pos_x - cam.x,
@@ -287,5 +302,19 @@ void drawGas(Gas gas, Camera cam){
         gas.pos_x + gas.width - cam.x,
         gas.pos_y + gas.height - cam.y,
         al_map_rgba(0, 255, 0, 120)
+    );
+}
+
+void drawOmnitrix(ALLEGRO_BITMAP *sprite, Map map, Camera cam){
+    Omnitrix omni = map.omnitrix;
+    al_draw_scaled_bitmap(
+        sprite,
+        0, 0,
+        al_get_bitmap_width(sprite),
+         al_get_bitmap_height(sprite),
+        omni.pos_x - cam.x,
+        omni.pos_y - cam.y,
+        omni.width, omni.height,
+        0
     );
 }

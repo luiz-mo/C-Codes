@@ -6,8 +6,15 @@ void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, ALLEGRO_BITMAP *bg, int
 
 void drawPausedScreen(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font);
 
-void drawGame(Player p, Map map, ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLEGRO_BITMAP *water, ALLEGRO_BITMAP *spikes, Camera cam);
+void drawGame(
+            Player p, Map map,
+            ALLEGRO_BITMAP *bg, ALLEGRO_BITMAP *plats, ALLEGRO_BITMAP *water,
+            ALLEGRO_BITMAP *spikes, ALLEGRO_BITMAP *omni, Camera cam);
 
 void drawGameOver(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font);
 
-void handleInput(ALLEGRO_EVENT event, Input *input, int *selected, state *curr_state, ALLEGRO_DISPLAY *d, ALLEGRO_FONT *f);
+void drawGameWon(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font);
+
+void handleInput(
+                ALLEGRO_EVENT event, Input *input, int *selected,
+                state *curr_state, ALLEGRO_DISPLAY *d, ALLEGRO_FONT *f);

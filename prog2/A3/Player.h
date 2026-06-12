@@ -14,19 +14,26 @@ typedef enum{
 
 typedef struct{
     ALLEGRO_BITMAP *sprites;
+
     float pos_x;
     float pos_y;
     int vx;
     int vy;
     int height;
     int width;
+
     int hp;
+
     int on_ground;
     Player_State state;
+
     int curr_frame;
     int frame_timer;
+
     int invul_time;
     int poison_timer;
+
+    int won;
 } Player;
 
 Player createPlayer();
