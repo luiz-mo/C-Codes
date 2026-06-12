@@ -98,8 +98,12 @@ void drawPlayer(Player player, Camera cam){
     if(player.vx < 0)
         flag = ALLEGRO_FLIP_HORIZONTAL;
 
-    al_draw_bitmap_region(
+    ALLEGRO_COLOR tint;
+    tint = player.invul_time > 0 ? al_map_rgba(255,255,255,128) : al_map_rgba(255,255,255,255);
+
+    al_draw_tinted_bitmap_region(
         player.sprites,
+        tint,
         sprite_x, sprite_y,
         sprite_w, sprite_h,
         draw_x, draw_y,

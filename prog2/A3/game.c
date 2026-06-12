@@ -14,6 +14,7 @@ void resetGame(Player *player, Input *input){
     player->vx = 0;
     player->vy = 0;
     player->on_ground = 1;
+    player->won = 0;
 
     input->crouch = 0;
     input->jump = 0;
@@ -29,7 +30,7 @@ int main(){
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();  
     ALLEGRO_DISPLAY *disp = al_create_display(1280, 720);
     ALLEGRO_FONT *font = al_load_ttf_font("./assets/fonts/Jersey20-Regular.ttf", 32, 0);
-    ALLEGRO_BITMAP *bg_home = al_load_bitmap("./assets/images/ben_backgroundd.jpg");
+    ALLEGRO_BITMAP *bg_home = al_load_bitmap("./assets/images/ben_background.jpg");
     ALLEGRO_BITMAP *bg = al_load_bitmap("./assets/images/background.jpeg");
     ALLEGRO_BITMAP *enemy = al_load_bitmap("./assets/images/dnalien_sprite.png");
     ALLEGRO_BITMAP *spikes = al_load_bitmap("./assets/images/spike.png");
@@ -39,9 +40,56 @@ int main(){
 
     al_set_window_title(disp, "omni");
 
+    int run = 1;
+
+    if(!timer){
+        puts("Erro ao criar timer");
+        run = 0;
+    }
+
+    if(!queue){
+        puts("Erro ao criar fila de eventos");
+        run = 0;
+    }
+
+    if(!font){
+        puts("Erro ao carregar fonte");
+        run = 0;
+    }
+
     if(!bg){
-        printf("Erro ao carregar background\n");
-        return 1;
+        puts("Erro ao carregar background\n");
+        run = 0;
+    }
+
+    if(!bg_home){
+        puts("Erro ao carregar background da home");
+        run = 0;
+    }
+
+    if(!enemy){
+        puts("Erro ao carregar sprite do inimigo");
+        run = 0;
+    }
+
+    if(!spikes){
+        puts("Erro ao carregar sprite dos espinhos");
+        run = 0;
+    }
+
+    if(!water){
+        puts("Erro ao carregar sprite da agua");
+        run = 0;
+    }
+
+    if(!plats){
+        puts("Erro ao carregar sprite das plataformas");
+        run = 0;
+    }
+
+    if(!omni){
+        puts("Erro ao carregar sprite do Omnitrix");
+        run = 0;
     }
 
     Player player = createPlayer();
@@ -49,28 +97,29 @@ int main(){
     Map map;
     if(createMap(&map, enemy) != 0){
         printf("Erro ao alocar inimigos");
-        return 1;
+        run = 0;
     }
     Camera cam = createCamera();
 
-    al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_display_event_source(disp));
-    al_register_event_source(queue, al_get_timer_event_source(timer));
-
-    ALLEGRO_EVENT event;
-    al_start_timer(timer);
+    if(run){
+        al_register_event_source(queue, al_get_keyboard_event_source());
+        al_register_event_source(queue, al_get_display_event_source(disp));
+        al_register_event_source(queue, al_get_timer_event_source(timer));
+        al_start_timer(timer);
+    }
  
     al_clear_to_color(al_map_rgb(255,255,255));
     
     int selected = 0;
     state curr_state = HOME;
+    ALLEGRO_EVENT event;
 
     /*laco principal do jogo*/
-    while(1){
+    while(run){
         al_wait_for_event(queue, &event);
 
         if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || curr_state == EXIT)
-            break;
+            run = 0;
         
         handleInput(event, &input, &selected, &curr_state, disp, font);
 
@@ -123,6 +172,7 @@ int main(){
     al_destroy_display(disp);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
+    al_destroy_font(font);
     al_destroy_bitmap(player.sprites);
     al_destroy_bitmap(bg);
     al_destroy_bitmap(bg_home);
@@ -130,7 +180,14 @@ int main(){
     al_destroy_bitmap(spikes);
     al_destroy_bitmap(water);
     al_destroy_bitmap(plats);
-    al_destroy_font(font);
+    al_destroy_bitmap(omni);
+
+    al_shutdown_font_addon();
+    al_shutdown_image_addon();
+    al_shutdown_primitives_addon();
+    al_shutdown_ttf_addon();
+
+    free(map.enemies);
 
     al_uninstall_keyboard();
 

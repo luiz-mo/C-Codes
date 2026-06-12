@@ -50,6 +50,7 @@ Gas createGas(float x, float y, float w, float h){
 }
 
 int createMap(Map *map, ALLEGRO_BITMAP *sprite){
+    
     if(!(map->enemies = malloc(sizeof(Enemy) * 10)))
         return 1;
 
@@ -57,13 +58,13 @@ int createMap(Map *map, ALLEGRO_BITMAP *sprite){
     Platform ground2 = {1100, 680, 600, 40, 0, 0, 0, 0};
     Platform ground3 = {1850, 680, 500, 40, 0, 0, 0, 0};
     Platform ground4 = {2950, 680, 900, 40, 0, 0, 0, 0};
-    Platform ground5 = {4000, 680, 1200, 40, 0, 0, 0, 0};
+    Platform ground5 = {4000, 680, 1300, 40, 0, 0, 0, 0};
     Platform plat1 = {1550, 520, 180, 30, 0, 0, 0, 0};
     Platform plat2 = {1800, 430, 180, 30, 0, 0, 0, 0};
     Platform plat3 = {4100, 500, 180, 30, 0, 0, 0, 0};
     Platform plat4 = {4400, 420, 180, 30, 0, 0, 0, 0};
     Platform plat5 = {4700, 340, 200, 30, 0, 0, 0, 0};
-    Platform moving1 = {2350, 500, 180, 30, 1, 4, 2350, 2750};
+    Platform moving1 = {2350, 500, 250, 30, 1, 4, 2350, 2750};
     Platform moving2 = {4850, 500, 180, 30, 1, 5, 4850, 5250};
 
     map->plats[0] = ground1;
@@ -84,7 +85,7 @@ int createMap(Map *map, ALLEGRO_BITMAP *sprite){
     map->enemies[1] = createEnemy(sprite, 1350, 630, 1200, 1600, E_WALK);
     map->enemies[2] = createEnemy(sprite, 3450, 630, 3100, 3750, E_WALK);
     map->enemies[3] = createEnemy(sprite, 1800, 380, 1800, 1800, E_JUMP);
-    map->enemies[4] = createEnemy(sprite, 2600, 450, 2600, 2600, E_JUMP);
+    map->enemies[4] = createEnemy(sprite, 2500, 450, 2600, 2600, E_JUMP);
     map->enemies[5] = createEnemy(sprite, 4450, 370, 4450, 4450, E_JUMP);
     map->n_enemies = 6;
 
@@ -92,12 +93,14 @@ int createMap(Map *map, ALLEGRO_BITMAP *sprite){
     Platform pit2 = {1700, 680, 150, 40, 0, 0, 0, 0};
     Platform pit3 = {2350, 680, 600, 40, 0, 0, 0, 0};
     Platform pit4 = {3850, 680, 150, 40, 0, 0, 0, 0};
+    Platform pit5 = {5300, 680, 1000, 40, 0, 0, 0, 0};
 
     map->pits[0] = pit1;
     map->pits[1] = pit2;
     map->pits[2] = pit3;
     map->pits[3] = pit4;
-    map->n_pits = 4;
+    map->pits[4] = pit5;
+    map->n_pits = 5;
 
     map->spikes[0] = createSpike(1250,640,64,64);
     map->spikes[1] = createSpike(3150,616,64,64);
@@ -113,7 +116,7 @@ int createMap(Map *map, ALLEGRO_BITMAP *sprite){
     map->n_gases = 2;
 
     map->omnitrix.pos_x = 5300;
-    map->omnitrix.pos_y = 450;
+    map->omnitrix.pos_y = 500;
     map->omnitrix.width = 45;
     map->omnitrix.height = 45;
 

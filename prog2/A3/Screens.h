@@ -1,6 +1,5 @@
 #include "init.h"
 #include "Player.h"
-#include "Map.h"
 
 void drawHome(ALLEGRO_DISPLAY *disp, ALLEGRO_FONT *font, ALLEGRO_BITMAP *bg, int selected);
 
