@@ -1,0 +1,130 @@
+Trabalho de Algoritmos e Estrutura de Dados 3 - 2026/1
+
+Autores:
+Arthur Nickel  (GRR 20252825)
+Bruno Hayashi  (GRR 20253206)
+Gabriel Jorge  (GRR 20250938)
+Luiz Mo        (GRR 20252981)
+
+-------------------------------------------------------------------
+
+Descrição geral
+
+
+O programa recebe uma série de valores numéricos pela entrada padrão,
+representando pontos igualmente espaçados num plano cartesiano, e
+devolve uma versão reduzida dessa série usando aproximação por
+segmentos de reta. A ideia é remover os pontos que "menos fazem
+falta", ou seja, cuja remoção gera o menor erro possível na
+representação.
+
+O critério de erro pode ser a área do triângulo formado pelo ponto e
+seus dois vizinhos (-a), ou a altura desse mesmo triângulo elevada ao
+quadrado (-h). Um ponto só é removido se o seu erro for estritamente
+menor que a tolerância passada como parâmetro.
+
+-------------------------------------------------------------------
+
+Organização dos arquivos
+
+
+main.c      - ponto de entrada do programa. Lê os parâmetros da linha
+              de comando e os valores da entrada padrão, monta o vetor
+              de pontos, chama o algoritmo guloso e imprime a saída.
+
+ponto.h/c   - define a struct Ponto e implementa as funções de cálculo
+              de erro: area_triangulo, altura2_triangulo e calcula_erro.
+
+heap.h/c    - implementa o min-heap com tabela de posições. Contém as
+              funções cria_heap, insere_heap, extrai_min_heap,
+              atualiza_heap e destroi_heap.
+
+guloso.h/c  - implementa o loop principal do algoritmo guloso. Extrai
+              o ponto de menor erro, remove-o se estiver abaixo da
+              tolerância e atualiza os vizinhos no heap.
+
+makefile    - compila o programa (make), roda os testes com valgrind
+              (make testes) e os testes de tempo (make tempo).
+
+MinimumTests/ - casos de teste feitos à mão cobrindo situações
+                diversas: séries constantes, crescentes, decrescentes,
+                valores negativos, notação científica, picos, bordas,
+                tolerância zero, 1 ponto, 2 pontos, entre outros.
+
+scripts/     - existe um arquivo chamado 'rodar_testes_basicos.sh"; 
+            esse, executa os testes feitos e utiliza do valgrind para 
+            encontrar erros, com a ajuda da IA, automatizou-se o processo
+            de leitura do log do valgrind, assim, escrevendo apenas o 
+            resultado que interessa "passou" ou "não passou".
+
+
+
+-------------------------------------------------------------------
+
+Estruturas de dados
+
+
+1. Vetor de Pontos (Ponto *)
+
+   Cada ponto armazena: x e y (coordenadas), erro (custo de remoção),
+   removido (flag indicando se foi retirado da representação), e dois
+   índices — anterior e proximo — que formam uma lista encadeada
+   implícita dentro do próprio vetor. Isso permite atualizar os
+   vizinhos em O(1) após cada remoção, sem precisar percorrer o vetor
+   inteiro.
+
+2. Min-heap 
+
+   Fila de prioridade que mantém sempre o ponto de menor erro na
+   raiz. O heap é implementado como um vetor de structs No (cada nó
+   guarda o índice do ponto e seu erro atual). A posição 0 do vetor
+   recebe um sentinela com erro -FLT_MAX para simplificar o bubble-up
+   sem precisar checar limites.
+
+   As operações de inserção, extração do mínimo e atualização de
+   prioridade são todas O(log n).
+
+3. Tabela de posições
+
+   Vetor auxiliar indexado pelo índice do ponto que informa em qual
+   posição do heap aquele ponto se encontra. Isso é o que permite
+   localizar um ponto no heap em O(1) para depois atualizá-lo em
+   O(log n), garantindo que o custo total do algoritmo seja O(n log n).
+   Quando um ponto é removido do heap, sua entrada na tabela é marcada
+   como -1.
+
+-------------------------------------------------------------------
+
+Complexidade
+
+Construção do heap:         O(n log n)
+Cada remoção + atualização: O(log n)
+Total de remoções:          no máximo n
+Custo total:                O(n log n)
+
+Para provar que o programa roda em O(N lgN), criou-se dois scripts com auxílio da IA. 
+O /scripts/gerar_grandes_entradas.sh gera 3 arquivos em /TimeTests, um arquivo contém 
+10 mil pontos, outro 100 mil outro 1 milhão. Existe também, o /scripts/rodar_testes_tempo.sh,
+que com o comando "time" executa o programa para esses arquivos e mostra o tempo que 
+demorou para rodá-los. Dessa forma, é possível ver que o tempo está longe de ser 
+quadrático, ou qualquer outro, se aproxima muito do O(N logN).
+
+-------------------------------------------------------------------
+
+Como compilar e executar
+
+
+  make
+  ./programa -a <tolerancia> < entrada.txt
+  ./programa -h <tolerancia> < entrada.txt
+
+Exemplo:
+  echo "5
+  532.2 3.185e2 323.1114 278.3 250.202" | ./programa -a 10.5
+
+Como rodar os testes:
+  make testes     (valgrind nos casos)
+  make tempo      (teste de escala com entradas grandes)
+
+Como limpar:
+  make clean      (remove objetos e executável)
